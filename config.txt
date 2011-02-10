@@ -1,0 +1,69 @@
+# RNAseq-Pi configuration file
+# Comment lines are marked with "#" at the beginning of the line, empty lines 
+# are ok.
+
+# Some values, but it can be also passed as parameters in the 
+# command line
+#input   reads.fq
+#format  fq
+#output  mapped_reads.sam
+#threads 4
+#batch   100000
+#paired no
+#verbose    no
+
+
+# Pipeline definition, each subprocess is performed in the order of the lines,
+# one instruction by line and marked by "step" at the beginning.
+# Operations are:
+#    preprocess -> perform some operation to the sequences (masking, trim, ...)
+#    filterProp -> remove reads with filters (low quality, low complexity)
+#    filterSeq  -> remove reads with homology to a reference
+#    mapper     -> align reads to a reference
+#    mixSAM     -> combine SAM files
+#    finish     -> finish the process
+step   preprocess  preprocessReads
+step   filterProp  filterQuality
+step   filterSeq  vectors
+step   filterProp  filterLowComplex
+step   filterSeq  ribosomal_mit
+step   filterSeq  ercc
+step   filterSeq  repeats_consensus
+step   mapper  refseq_hg19
+step   mapper  hg19
+step   mapper  pSplices_hg19
+step   mixSAM  refseq_hg19,hg19,pSplices_hg19
+step   finish
+
+
+# This part configures several PATHS and OPTIONS to run correctly RNAseq-Pi.
+
+# PATH to executables
+path_to_bwa /proj/hoodlab/share/programs/bwa/bwa
+path_to_bowtie /proj/hoodlab/share/programs/bowtie/bowtie
+path_to_blat /proj/hoodlab/share/programs/blat/blat
+path_to_scripts /proj/hoodlab/share/programs/scripts
+
+# Prefered mappers
+filter_mapper    bowtie
+genome_mapper    bwa   
+
+# Default paramameters for mappers
+mapper_opts_bwa 
+mapper_opts_bowtie -S --sam-nohead -a -n 2 --best --strata
+mapper_opts_blat    
+
+# Definitions of scripts
+script_psl2sam pls2sam.pl
+script_fq2fa   fq2fa.pl
+scripts_filterLowComplex    filterLowComplex.pl
+script_filterQuality   filterQuality.pl
+script_preprocessReads preprocessReads.pl
+
+# PATH to sequences and indexes
+indexes_bwa /proj/hoodlab/share/programs/bwa/indexes
+indexes_bowtie /proj/hoodlab/share/programs/bowtie/indexes
+indexes_blat /proj/hoodlab/share/programs/blat/indexes
+seqs_fasta /proj/hoodlab/share/programs/data
+
+
