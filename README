@@ -1,0 +1,80 @@
+RNAseq-Pi - A general, flexible, modular and scalable RNAseq Pipeline.
+
+Copyright (C) 2011 Juan Caballero [Institute for Systems Biology]
+
+DESCRIPTION
+
+RNAseq-Pi is a collection of programs (modules) to run transcriptomic analysis 
+in RNAseq samples.
+
+The modules can be classified as:
+    a) Composition filters
+    b) Homology filters
+    c) Sequence mapping
+    d) Special operations
+    
+A typical pipeline can be defined:
+
++------------+
+| FASTA /    |      +-----------------------------+
+| FASTQ file | ---> |      Preprocessing          |
++------------+      +-----------------------------+
+                                |
+                                |
+                    +-----------------------------+
+                    |     Low quality filter      | ---> Bad reads 
+                    +-----------------------------+
+                                |
+                                |
+                    +-----------------------------+
+                    |       Vector filter         | ---> Bad reads
+                    +-----------------------------+
+                                |
+                                |
+                    +-----------------------------+
+                    |     Low complexity filter   | ---> Bad reads
+                    +-----------------------------+
+                                |
+                                |
+                    +-----------------------------+
+                    |     Ribosomal + MT filter   | ---> Uninformative reads
+                    +-----------------------------+
+                                |
+                                |
+                    +-----------------------------+
+                    |    Repeat consensus filter  | ---> Uninformative reads
+                    +-----------------------------+
+                                |
+                                |
+                    +-----------------------------+
+                    |       Spike-ins filter      | ---> QC/Normalization reads
+                    +-----------------------------+
+                                |
+                                |
+                    +-----------------------------+
+                    |   Mapping                   |
+                    |       Regular               |
+                    |           Transcripts       |
+                    |           Genome            | ---> Informative reads 
+                    |           Predicted splices |          |
+                    |       MapSplice             |          +---> CUFFLINKS
+                    +-----------------------------+
+                                |
+                                |
+                    +-----------------------------+
+                    |Other genome conservation    |
+                    |Assembly                     |
+                    |Contamination verification   | ---> ? reads
+                    |???                          |
+                    +-----------------------------+
+                    
+As mentioned above, many steps can be ommited or in different order (modular) 
+or can use diferent aligners like bowtie, bwa or blat (flexibility).
+
+CITATION
+
+Caballero J ... 
+
+LICENSE
+
+All the code is under the GPLv3 licence, see LICENSE file for details.
