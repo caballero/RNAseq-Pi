@@ -131,7 +131,8 @@ pod2usage(-verbose => 2) unless ($method =~ m/ce|cwf|cl|cz|cm|ct/);
 
 # Aditional module for cz
 if ($method eq 'cz') { 
-    use Compress::Zlib;
+#    use Compress::Zlib;
+    die "sorry, Zlib is deactivated for now, plase select another method\n";
 }
 
 # opening files (if required)
@@ -473,21 +474,21 @@ sub ct {
 #  cz -> Function to calculate the Compression factor.
 #  Call: cz( \$seq, \$win ) STRING, NUMBER
 #  Return: @values ARRAY
-sub cz {
-	my $seq    = shift;
-	my $win    = shift;
-	my $len    = length $$seq;
-	my @values = ();
-	for (my $p = 0; $p <= ($len - $$win); $p++) {
-		my $str = substr ($$seq, $p, $$win);
-		my $r   = 0;
-		my $z   = Compress::Zlib::memGzip($str);
-		my $bz  = length $z;
-		$r      = $bz / $$win; 
-		push @values, $r;
-	}
-	return @values;
-}
+#sub cz {
+#	my $seq    = shift;
+#	my $win    = shift;
+#	my $len    = length $$seq;
+#	my @values = ();
+#	for (my $p = 0; $p <= ($len - $$win); $p++) {
+#		my $str = substr ($$seq, $p, $$win);
+#		my $r   = 0;
+#		my $z   = Compress::Zlib::memGzip($str);
+#		my $bz  = length $z;
+#		$r      = $bz / $$win; 
+#		push @values, $r;
+#	}
+#	return @values;
+#}
 
 #  pot -> Function for calculate the exponential of a number.
 #  Call: pot( $num, $exp ) NUMBER, NUMBER

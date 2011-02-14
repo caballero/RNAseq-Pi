@@ -137,7 +137,7 @@ GetOptions(
     'b|bad:s'          => \$wr_bad,
     't|trim'           => \$trim,
     'w|window:i'       => \$win,
-    'g|group:i'        => \$bacth,
+    'g|group:i'        => \$batch,
     'm|minsize:i'      => \$minsize
 ) or pod2usage(-verbose => 2);
     
