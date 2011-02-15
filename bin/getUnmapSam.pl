@@ -17,6 +17,7 @@ OPTIONS:
    Parameter       Description                  Values     Default
    -i --input      Read sequences from here     File*      STDIN
    -o --output     Write sequences here         File       STDOUT
+   -m --mapped     Write mapped reads here      FILE       
    -f --format     Output format (Fastq/Fasta)  fq/fa      fq
    -g --group      Write sequences in batches   int        100000
    -v --verbose    Verbose mode
@@ -67,6 +68,7 @@ my $format   = 'fq';          # sequence format
 my $input    = undef;         # input SAM file
 my $output   = undef;         # output file
 my $batch    = 100000;        # size of the batch
+my $mapped   = undef;         # mapped file output
 
 # Main variables
 my $id       = undef;         # Sequence ID
@@ -86,6 +88,7 @@ GetOptions(
     'o|output:s'       => \$output,
     'f|format:s'       => \$format,
     'b|batch:i'        => \$batch,
+    'm|mapped:s'       => \$mapped
 ) or pod2usage(-verbose => 2);
     
 pod2usage(-verbose => 2) if (defined $help);
@@ -99,6 +102,9 @@ if (defined $input) {
 if (defined $output) {
     open STDOUT, ">$output" or die "cannot write file $output\n";
 }
+if (defined $mapped) {
+    open MAP, ">$mapped" or die "cannot write file $mapped\n";
+}
 
 while (<>) {
     next if (m/^\@/); # skip SAM headers
@@ -108,7 +114,13 @@ while (<>) {
     $bit  = $arr[1];
     $seq  = $arr[8];
     $qual = $arr[9];
-    next unless ($bit == 4); # Only unmapped reads (flag = 4)
+    # Only unmapped reads (flag = 4)
+    unless ($bit == 4) {
+        print MAP $_ if (defined $mapped);
+        $seqs{'map'}++;
+        $seqs{'used'}{$id} = 1;
+        next;
+    }
     $seqs{'num'}++;
     $seqs{'used'}{$id} = 1;
     
@@ -127,8 +139,8 @@ while (<>) {
 flushSeqs();
 
 # Print report in verbose mode 
-warn "found $nbatch sequences\n" if (defined $verbose);
-
+warn "found $nbatch unmapped sequences\n" if (defined $verbose);
+warn "found $seqs{'map'} mapped sequences\n" if (defined $verbose);
 
 ###################################
 ####   S U B R O U T I N E S   ####
