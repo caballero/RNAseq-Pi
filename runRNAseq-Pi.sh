@@ -25,19 +25,19 @@ do
     filterQuality.pl -v -i $FQ -o $ID.qual_OK.fq -b $ID.qual_BAD.fq
     
     # step2 -> remove vector matches
-    bowtie $BWPARAM --un $ID.vector_OK.fq $BWINDEX/UniVec_Core $ID.qual_OK.fq $ID.bowtie_vector_BAD.sam
+    bowtie $BWPARAM --un $ID.vector_OK.fq $BWINDEX/UniVec_Core $ID.qual_OK.fq | perl -lane 'print unless($F[1] == 4)' > $ID.bowtie_vector_BAD.sam
     
     # step3 -> filter low complexity reads
     filterLowComplex.pl -v -i $ID.vector_OK.fq -o $ID.complex_OK.fq -b $ID.complex_BAD.fq
     
     # step4 -> remove rRNA/MT matches
-    bowtie $BWPARAM --un $ID.riboMT_OK.fq $BWINDEX/human.GRCh37.61.rRNA-MT $ID.complex_OK.fq $ID.bowtie_riboMT_BAD.sam
+    bowtie $BWPARAM --un $ID.riboMT_OK.fq $BWINDEX/human.GRCh37.61.rRNA-MT $ID.complex_OK.fq | perl -lane 'print unless($F[1] == 4)' > $ID.bowtie_riboMT_BAD.sam
     
     # step5 -> remove repeats matches
-    bowtie $BWPARAM --un $ID.repeat_OK.fq $BWINDEX/human_RepBase15.10 $ID.riboMT_OK.fq $ID.bowtie_repeat_BAD.sam
+    bowtie $BWPARAM --un $ID.repeat_OK.fq $BWINDEX/human_RepBase15.10 $ID.riboMT_OK.fq | perl -lane 'print unless($F[1] == 4)' > $ID.bowtie_repeat_BAD.sam
     
     # step6 -> remove ERCC matches
-    bowtie $BWPARAM --un $ID.ercc_OK.fq $BWINDEX/ERCC_reference_081215 $ID.repeat_OK.fq $ID.bowtie_ercc_BAD.sam
+    bowtie $BWPARAM --un $ID.ercc_OK.fq $BWINDEX/ERCC_reference_081215 $ID.repeat_OK.fq | perl -lane 'print unless($F[1] == 4)' > $ID.bowtie_ercc_BAD.sam
     
     # collect the filtered reads
     mv $ID.ercc_OK.fq $ID.FILTERED.fq
