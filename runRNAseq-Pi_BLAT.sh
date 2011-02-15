@@ -44,7 +44,7 @@ do
     # step3 -> filter low complexity reads
     echo "  #3 low complex filter"
     date
-    filterLowComplex.pl -v -f fa -i $ID.vector_OK.fa -o $ID.complex_OK.fa -b $ID.complex_BAD.fa
+    filterLowComplex.pl -v -f fa -i $ID.vector_OK.fa -o $ID.complex_OK.fa -b $ID.blat_complex_BAD.fa
     date
 
     # step4 -> remove rRNA/MT matches
