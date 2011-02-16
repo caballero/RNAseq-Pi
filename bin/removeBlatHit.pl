@@ -55,7 +55,7 @@ while (<PSL>) {
 close PSL;
 
 $/ = "\n>";
-open FA, "$fa" or die "cannot open $FA\n";
+open FA, "$fa" or die "cannot open $fa\n";
 while (<FA>) {
     s/>//g;
     my ($id, $seq) = split (/\n/, $_);
