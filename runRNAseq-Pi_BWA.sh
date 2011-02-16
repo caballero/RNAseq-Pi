@@ -33,7 +33,7 @@ do
     date    
     bwa aln $BWPARAM $BWINDEX/solexa_primers $ID.qual_OK.fq > $ID.bwa_vector.sai
     bwa samse $BWINDEX/solexa_primers $ID.qual_OK.fq $ID.bwa_vector.sai > $ID.bwa_vector.sam
-    getUnmapSam.pl -i $ID.bwa_vector.sam -o $ID.bwa_vector_OK.fq -m $ID.bwa_vector_BAD.sam
+    getUnmapSam.pl -i $ID.bwa_vector.sam -o $ID.vector_OK.fq -m $ID.bwa_vector_BAD.sam
     rm $ID.bwa_vector.sam $ID.bwa_vector.sai
     date
 
@@ -48,7 +48,7 @@ do
     date
     bwa aln $BWPARAM $BWINDEX/human.GRCh37.61.rRNA-MT $ID.complex_OK.fq > $ID.bwa_riboMT.sai
     bwa samse $BWINDEX/human.GRCh37.61.rRNA-MT $ID.complex_OK.fq $ID.bwa_riboMT.sai > $ID.bwa_riboMT.sam
-    getUnmapSam.pl -i $ID.bwa_riboMT.sam -o $ID.bwa_riboMT_OK.fq -m $ID.bwa_riboMT_BAD.sam
+    getUnmapSam.pl -i $ID.bwa_riboMT.sam -o $ID.riboMT_OK.fq -m $ID.bwa_riboMT_BAD.sam
     rm $ID.bwa_riboMT.sam $ID.bwa_riboMT.sai 
     date
 
@@ -57,7 +57,7 @@ do
     date
     bwa aln $BWPARAM $BWINDEX/human_RepBase15.10 $ID.riboMT_OK.fq > $ID.bwa_repeat.sai
     bwa samse $BWINDEX/human_RepBase15.10 $ID.riboMT_OK.fq $ID.bwa_repeat.sai > $ID.bwa_repeat.sam
-    getUnmapSam.pl -i $ID.bwa_repeat.sam -o $ID.bwa_repeat_OK.fq -m $ID.bwa_repeat_BAD.sam
+    getUnmapSam.pl -i $ID.bwa_repeat.sam -o $ID.repeat_OK.fq -m $ID.bwa_repeat_BAD.sam
     rm $ID.bwa_repeat.sam $ID.bwa_repeat.sai 
     date
 
@@ -66,7 +66,7 @@ do
     date
     bwa aln $BWPARAM $BWINDEX/ERCC_reference_081215 $ID.repeat_OK.fq > $ID.bwa_ercc.sai
     bwa samse $BWINDEX/ERCC_reference_081215 $ID.repeat_OK.fq $ID.bwa_ercc.sai > $ID.bwa_ercc.sam
-    getUnmapSam.pl -i $ID.bwa_ercc.sam -o $ID.bwa_ercc_OK.fq -m $ID.bwa_ercc_BAD.sam
+    getUnmapSam.pl -i $ID.bwa_ercc.sam -o $ID.ercc_OK.fq -m $ID.bwa_ercc_BAD.sam
     rm $ID.bwa_ercc.sam $ID.bwa_ercc.sai 
     date
 

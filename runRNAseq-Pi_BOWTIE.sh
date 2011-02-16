@@ -22,13 +22,13 @@ do
     # cascade mode, if you need to change step order, must change outputs/inputs
     
     # step1 -> filter low quality reads
-    filterQuality.pl -v -i $FQ -o $ID.qual_OK.fq -b $ID.qual_BAD.fq
+    filterQuality.pl -v -i $FQ -o $ID.qual_OK.fq -b $ID.bowtie_qual_BAD.fq
     
     # step2 -> remove vector matches
     bowtie $BWPARAM --un $ID.vector_OK.fq $BWINDEX/UniVec_Core $ID.qual_OK.fq | perl -lane 'print unless($F[1] == 4)' > $ID.bowtie_vector_BAD.sam
     
     # step3 -> filter low complexity reads
-    filterLowComplex.pl -v -i $ID.vector_OK.fq -o $ID.complex_OK.fq -b $ID.complex_BAD.fq
+    filterLowComplex.pl -v -i $ID.vector_OK.fq -o $ID.complex_OK.fq -b $ID.bowtie_complex_BAD.fq
     
     # step4 -> remove rRNA/MT matches
     bowtie $BWPARAM --un $ID.riboMT_OK.fq $BWINDEX/human.GRCh37.61.rRNA-MT $ID.complex_OK.fq | perl -lane 'print unless($F[1] == 4)' > $ID.bowtie_riboMT_BAD.sam
@@ -40,14 +40,16 @@ do
     bowtie $BWPARAM --un $ID.ercc_OK.fq $BWINDEX/ERCC_reference_081215 $ID.repeat_OK.fq | perl -lane 'print unless($F[1] == 4)' > $ID.bowtie_ercc_BAD.sam
     
     # collect the filtered reads
-    mv $ID.ercc_OK.fq $ID.FILTERED.fq
+    mv $ID.ercc_OK.fq $ID.bowtie_FILTERED.fq
     
-    # remove/compress temporary files
-    for FILE in *OK.fq *BAD.fq *BAD.sam
+    # compress temporary files
+    for FILE in *BAD.fq *BAD.sam $ID.bowtie_FILTERED.fq
     do
-        rm $FILE
-        #gzip $FILE
+        gzip $FILE
     done
+    
+    # remove temporary files
+    rm *_OK.fq
     
     # step7 -> assembly, reference aligment, etc
     
