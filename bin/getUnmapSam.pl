@@ -108,13 +108,13 @@ if (defined $mapped) {
 while (<>) {
     # catch SAM header
     if (/^\@/) {
-        print MAPPED $_ if (defined $mapped);
+        #print MAPPED $_ if (defined $mapped);
     }
     else {
         my @line = split (/\t/, $_);
         my $flag = $line[1];
         
-        if ($flag % 4 == 0) { # unmapped read
+        if ($flag == 4) { # unmapped read
             my $id   = $line[0];
             my $seq  = $line[9];
             my $qual = $line[10];
