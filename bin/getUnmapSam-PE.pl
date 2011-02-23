@@ -133,11 +133,13 @@ while (<>) {
         my $qual = $line[10];
         
         if ($flag == 77) { # unmapped read 1
+            $id =~ s/#0$/#1/;
             my $fseq = formatSeq($id, $seq, $qual);
             print O1 $r;
             $num_unmap1++;
         }
         elsif ($flag == 141) { # unmapped read 2
+            $id =~ s/#0$/#2/;
             my $fseq = formatSeq($id, $seq, $qual);
             print O2 $r;
             $num_unmap2++;
