@@ -150,54 +150,61 @@ if (defined $wr_bad) {
 
 # FastQ format
 if ($format eq 'fq') {
-    $/ = "\n@";
+    my $line = 0;
+    my $blob = undef;
     while (<>) {
-        s/^\@//;
-        $seqs{'num'}++;
-        ($id, $seq, $sep, $qual) = split (/\n/, $_);
-        $sel   = 1;
-        @val   = ();
-        $tseq  = undef;
-        $tqual = undef;
+        $line++;
+        $blob .= $_;
+        if ($line == 4) {
+            $blob =~ s/^\@//;
+            $seqs{'num'}++;
+            ($id, $seq, $sep, $qual) = split (/\n/, $blob);
+            $sel   = 1;
+            @val   = ();
+            $tseq  = undef;
+            $tqual = undef;
         
-        # Trim action
-        if (defined $trim) {
-            @val   = checkComplex($method, $seq, $kmer, $win);
-            $tseq  = trimSeq($seq, $win, @val);
-            #warn "$seq $tseq @val\n" if (defined $verbose);
+            # Trim action
+            if (defined $trim) {
+                @val   = checkComplex($method, $seq, $kmer, $win);
+                $tseq  = trimSeq($seq, $win, @val);
+                #warn "$seq $tseq @val\n" if (defined $verbose);
             
-            if (defined $tseq) {
-                if (length $tseq < $minsize) { 
-                    $sel = 0;
-                } 
-                else {
-                    $cnt_trim++;
-                    $tqual = substr($qual, 0, length $tseq);
+                if (defined $tseq) {
+                    if (length $tseq < $minsize) { 
+                        $sel = 0;
+                    } 
+                    else {
+                        $cnt_trim++;
+                        $tqual = substr($qual, 0, length $tseq);
+                    }
+                }
+                else { 
+                    $sel = 0; 
                 }
             }
-            else { 
-                $sel = 0; 
+            else {
+                @val   = checkComplex($method, $seq, $kmer, length $seq);
+                $sel   = 0 if ($val[0] < $lim);
+                $tseq  = $seq;
+                $tqual = $qual
             }
-        }
-        else {
-            @val   = checkComplex($method, $seq, $kmer, length $seq);
-            $sel   = 0 if ($val[0] < $lim);
-            $tseq  = $seq;
-            $tqual = $qual
-        }
         
-        # Sequences is OK
-        if ($sel == 1) { 
-            $cnt_ok++;
-            $seqs{'good'} .= "\@$id\n$tseq\n$sep\n$tqual\n";
-        }
-        # Sequence is bad
-        else {
-            $cnt_bad++;
-            $seqs{'bad'} .= "\@$id\n$seq\n$sep\n$qual\n";
-        }
+            # Sequences is OK
+            if ($sel == 1) { 
+                $cnt_ok++;
+                $seqs{'good'} .= "\@$id\n$tseq\n$sep\n$tqual\n";
+            }
+            # Sequence is bad
+            else {
+                $cnt_bad++;
+                $seqs{'bad'} .= "\@$id\n$seq\n$sep\n$qual\n";
+            }
         
-        flushSeqs() if ($seqs{'num'} >= $batch);
+            flushSeqs() if ($seqs{'num'} >= $batch);
+            $blob = undef;
+            $line = 0;
+        }
     }
     flushSeqs();
 }

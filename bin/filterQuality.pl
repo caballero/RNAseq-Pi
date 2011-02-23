@@ -165,80 +165,87 @@ my @vec_q = qual2num($vec_q) if($fil_v eq 'Y');
 
 # Choosing FASTQ as format
 if ($format eq 'fq') {
-    $/ = "\n\@";
+    my $line = 0;
+    my $blob = undef;
     while (<>) {
-        s/^\@//;
-        $seqs{'num'}++;
-        ($id, $seq, $sep, $qual) = split (/\n/, $_);
+        $line++;
+        $blob .= $_;
+        if ($line == 4) {
+            $blob =~ s/^\@//;
+            $seqs{'num'}++;
+            ($id, $seq, $sep, $qual) = split (/\n/, $blob);
+            
+            # Check for valid sequences
+            #my $valS = validateSeq($seq);
+            #die "Sequence is not valid: $id + $seq\n" if ($valS == 0);
+            #my $valQ = validateQual($qual);
+            #die "Quality is not valid: $id + $qual\n" if ($valQ == 0);
         
-        # Check for valid sequences
-        #my $valS = validateSeq($seq);
-        #die "Sequence is not valid: $id + $seq\n" if ($valS == 0);
-        #my $valQ = validateQual($qual);
-        #die "Quality is not valid: $id + $qual\n" if ($valQ == 0);
-        
-        # Check the sequence        
-        $sel  = 1;
-        $selN = 1;
-        $selQ = 1;
-        $selV = 1;
-        if (defined $trim) {
-            @valN = checkN($seq,  $win) if ($fil_n eq 'Y');
-            @valQ = checkQ($qual, $win) if ($fil_q eq 'Y');
-            @valV = checkV($qual, $win) if ($fil_v eq 'Y');
-            @val  = mixValues(\@valN, \@valQ, \@valV);
-            $tseq = trimSeq($seq, $win, @val);
-            if (defined $tseq) {
-                if (length $tseq < $minsize) { 
-                    $sel = 0;
-                } 
-                else {
-                    if (length $seq != length $tseq) {
-                        $cnt_trim++;
-                        $tqual = substr($qual, 0, length $tseq);
-                        #warn "$id:$seq:$tseq\n" if (defined $verbose);
-                        #warn "$id:$qual:$tqual\n" if (defined $verbose);
-                    }
+            # Check the sequence        
+            $sel  = 1;
+            $selN = 1;
+            $selQ = 1;
+            $selV = 1;
+            if (defined $trim) {
+                @valN = checkN($seq,  $win) if ($fil_n eq 'Y');
+                @valQ = checkQ($qual, $win) if ($fil_q eq 'Y');
+                @valV = checkV($qual, $win) if ($fil_v eq 'Y');
+                @val  = mixValues(\@valN, \@valQ, \@valV);
+                $tseq = trimSeq($seq, $win, @val);
+                if (defined $tseq) {
+                    if (length $tseq < $minsize) { 
+                        $sel = 0;
+                    } 
                     else {
-                        $tqual = $qual;
+                        if (length $seq != length $tseq) {
+                            $cnt_trim++;
+                            $tqual = substr($qual, 0, length $tseq);
+                            #warn "$id:$seq:$tseq\n" if (defined $verbose);
+                            #warn "$id:$qual:$tqual\n" if (defined $verbose);
+                        }
+                        else {
+                            $tqual = $qual;
+                        }
                     }
                 }
+                else { 
+                    $sel = 0; 
+                }
             }
-            else { 
-                $sel = 0; 
-            }
-        }
-        else {
-            if ($fil_n eq 'Y') {
-                @valN  = checkN($seq,  length $seq);
-                $selN  = $valN[0];
-            }
-            if ($fil_q eq 'Y') {
-                @valQ  = checkQ($qual, length $seq);
-                $selQ  = $valQ[0];
-            }
-            if ($fil_v eq 'Y') {
-                @valV  = checkV($qual, length $seq);
-                $selV  = $valV[0];
-            }
-            if ($selN == 1 and $selQ == 1 and $selV == 1) { $sel = 1; } else { $sel = 0; }
+            else {
+                if ($fil_n eq 'Y') {
+                    @valN  = checkN($seq,  length $seq);
+                    $selN  = $valN[0];
+                }
+                if ($fil_q eq 'Y') {
+                    @valQ  = checkQ($qual, length $seq);
+                    $selQ  = $valQ[0];
+                }
+                if ($fil_v eq 'Y') {
+                    @valV  = checkV($qual, length $seq);
+                    $selV  = $valV[0];
+                }
+                if ($selN == 1 and $selQ == 1 and $selV == 1) { $sel = 1; } else { $sel = 0; }
             
-            $tseq  = $seq;
-            $tqual = $qual;
-        }
+                $tseq  = $seq;
+                $tqual = $qual;
+            }
         
-        # Sequences is OK
-        if ($sel == 1) { 
-            $cnt_ok++;
-            $seqs{'good'} .= "\@$id\n$tseq\n$sep\n$tqual\n";
-        }
-        # Sequence is bad
-        else {
-            $cnt_bad++;
-            $seqs{'bad'} .= "\@$id\n$seq\n$sep\n$qual\n";
-        }
+            # Sequences is OK
+            if ($sel == 1) { 
+                $cnt_ok++;
+                $seqs{'good'} .= "\@$id\n$tseq\n$sep\n$tqual\n";
+            }
+            # Sequence is bad
+            else {
+                $cnt_bad++;
+                $seqs{'bad'} .= "\@$id\n$seq\n$sep\n$qual\n";
+            }
     
-        flushSeqs() if ($seqs{'num'} >= $batch);
+            flushSeqs() if ($seqs{'num'} >= $batch);
+            $line = 0;
+            $blob = undef;
+        }
     }
     flushSeqs();
 }
