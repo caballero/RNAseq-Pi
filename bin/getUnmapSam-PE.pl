@@ -131,6 +131,7 @@ while (<>) {
         my $id   = $line[0];
         my $seq  = $line[9];
         my $qual = $line[10];
+        my $r    = undef;
         
         if ($flag == 77) { # unmapped read 1
             $id =~ s/#0$/#1/;
