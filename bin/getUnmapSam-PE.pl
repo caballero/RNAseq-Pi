@@ -131,18 +131,18 @@ while (<>) {
         my $id   = $line[0];
         my $seq  = $line[9];
         my $qual = $line[10];
-        my $r    = undef;
+        my $fseq = undef;
         
         if ($flag == 77) { # unmapped read 1
             $id =~ s/#0$/#1/;
-            my $fseq = formatSeq($id, $seq, $qual);
-            print O1 $r;
+            $fseq = formatSeq($id, $seq, $qual);
+            print O1 $fseq;
             $num_unmap1++;
         }
         elsif ($flag == 141) { # unmapped read 2
             $id =~ s/#0$/#2/;
-            my $fseq = formatSeq($id, $seq, $qual);
-            print O2 $r;
+            $fseq = formatSeq($id, $seq, $qual);
+            print O2 $fseq;
             $num_unmap2++;
         }
         else { # mapped read
