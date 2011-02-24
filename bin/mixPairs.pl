@@ -22,12 +22,13 @@ OPTIONS:
    -t --type        Pair relation**           fr/rf/ff        fr
    -q --qual        Default quality score                     B
    -b --batch       Process pairs in batches  INT             1000000
+   -u --unpaired    Output unpaired reads     FILE   
    -v --verbose     Verbose mode
    -h --help        Print this screen
    
    *  File can be compressed (gzip/bzip2)
    ** Pairing can be fr: for-rev, rf: rev-for, ff: for-for. Rev sequences
-      will be reverse/complementary.
+      will be changed to reverse/complementary.
 
 =head1 EXAMPLES
 
@@ -94,7 +95,7 @@ GetOptions(
     '2|pair2:s'      => \$pair2,
     't|type:s'       => \$type,
     'b|batch:i'      => \$batch,
-    'u|inpaired:s'   => \$unpair,
+    'u|unpaired:s'   => \$unpair,
     'q|qual:s'       => \$def_qual
 ) or pod2usage(-verbose => 2);
 
