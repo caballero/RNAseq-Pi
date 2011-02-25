@@ -83,6 +83,8 @@ my $unpair     = undef;    # write inpair sequences here
 my %pairs      = ();
 my $cnt        =  0;
 my ($id1, $id2, $seq1, $seq2, $sep, $qual1, $qual2);
+my $num_paired   = 0;
+my $num_unpaired = 0;
 
 # Calling options
 GetOptions(
@@ -110,6 +112,11 @@ if (defined $unpair) {
     open UNP, ">$unpair" or die "cannot open $unpair\n";
 }
 
+$pair1 = "gunzip -c $pair1 | " if ($pair1 =~ m/\.gz$/);
+$pair2 = "gunzip -c $pair2 | " if ($pair2 =~ m/\.gz$/);
+$pair1 = "bunzip2 -c $pair1 | " if ($pair1 =~ m/\.bz2$/);
+$pair2 = "bunzip2 -c $pair2 | " if ($pair2 =~ m/\.bz2$/);
+
 if ($format_in eq 'fq') {
     my $line = 0;
     my $blob = undef;
@@ -121,7 +128,7 @@ if ($format_in eq 'fq') {
             $cnt++;
             ($id1, $seq1, $sep, $qual1) = split (/\n/, $blob);
             $id1 =~ s/\/\d$//;
-            $id1 =~ s/^\@//;
+            $id1 =~ s/^\@//;        
             $pairs{$id1}{'s1'} = $seq1;
             $pairs{$id1}{'q1'} = $qual1;
             if ($cnt >= $batch) {
@@ -161,9 +168,13 @@ close P1;
 
 flushUnpair() if (defined $unpair);
 
+if (defined $verbose) {
+    warn "# Mixed $num_paired paired sequences, $num_unpaired unpaired\n";
+}
+
 # SUBROUTINES
 sub rc {
-    my $s = @_;
+    my $s = shift @_;
     my $r = reverse $s;
     $r =~ tr/ACGTacgt/TGCAtgca/;
     return $r;
@@ -184,6 +195,8 @@ sub readPair2 {
               next unless (defined $pairs{$id2}{'s1'});
               $pairs{$id2}{'s2'} = $seq2;
               $pairs{$id2}{'q2'} = $qual2;
+              $l = 0;
+              $b = undef;
             }
         }
         close P2;
@@ -204,6 +217,7 @@ sub readPair2 {
 sub flushSeqs {
     foreach my $id (keys %pairs) {
         if (defined $pairs{$id}{'s1'} and defined $pairs{$id}{'s2'}) {
+            $num_paired++;
             $seq1 = $pairs{$id}{'s1'};
             $seq2 = $pairs{$id}{'s2'};
             $qual1 = $def_qual x (length $seq1);
@@ -242,6 +256,7 @@ sub flushSeqs {
 
 sub flushUnpair {
     foreach my $id (keys %pairs) {
+        $num_unpaired++;
         if (defined $pairs{$id}{'s1'}) {
             print UNP "$id/1\t$seq1";
             print UNP "\t", $pairs{$id}{'q1'} if (defined $pairs{$id}{'q1'});
