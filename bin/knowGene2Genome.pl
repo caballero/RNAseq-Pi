@@ -127,7 +127,6 @@ while (<GTF>) {
 # ordering bases in transcripts
 foreach my $tid (keys %gtf) {
     my @bases = @{ $gtf{$tid}{'trs'} };
-    @bases = reverse @bases if ($gtf{$tid}{'dir'} eq '-');
     @{ $gtf{$tid}{'trs'} } = sort { $a<=>$b } (@bases);
 }
 
@@ -142,7 +141,6 @@ while (<>) {
     my $cig  = $line[5];
     my $dir  = '+'; $dir = '-' if ($flag % 16 == 0);
     if (defined $gtf{$hit}{'chr'}) {
-        $line[2] = $gtf{$hit}{'chr'};  
         my ($new_hit, $new_pos, $new_cig, $new_dir) = decodeMap($hit, $pos, $cig, $dir);
         next if (defined $redundant{"$read:$new_hit:$new_pos:$new_cig"});
         $redundant{"$read:$new_hit:$new_pos:$new_cig"}++;
