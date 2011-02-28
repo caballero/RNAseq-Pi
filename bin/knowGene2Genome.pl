@@ -110,6 +110,7 @@ if (defined $excluded) {
 warn "loading transcript information from $gtf_file\n" if (defined $verbose);
 while (<GTF>) {
     my @line = split (/\t/, $_);
+    next if ($line[1] =~ m/psudogene/i);
     next unless ($line[2] eq 'exon');
     next unless (m/transcript_id "(.+?)"/);
     my $tid = $1;
@@ -140,6 +141,7 @@ foreach my $tid (keys %gtf) {
 # parsing the SAM file
 warn "parsing SAM file\n" if (defined $verbose);
 while (<>) {
+    chomp;
     next if (m/^\@/); # skip SAM headers
     my @line = split (/\t/, $_);
     my $read = $line[0];
@@ -148,6 +150,10 @@ while (<>) {
     my $pos  = $line[3];
     my $cig  = $line[5];
     next unless ($cig =~ m/^\d+M$/); # only exact matches for now (no indels/masking)
+    unless (defined $$gtf{$hit}{'trs'}) {
+        warn "undefined exon information for $read $hit $pos $cig\n" if (defined $verbose);
+        next;
+    }
     my $dir  = '+'; 
     $dir = '-' if ($flag == 16);
     if (defined $gtf{$hit}{'chr'}) {
@@ -165,7 +171,7 @@ while (<>) {
         $line[5] = $new_cig;
         push @line, "YT:Z:$hit";
         $_ = join ("\t", @line);
-        print $_;
+        print "$_\n";
     } else {
         print BAD $_ if (defined $excluded);
     }
@@ -186,7 +192,7 @@ sub decodeMap {
     my @exons = split (/:/, $gtf{$hit}{'trs'});
     my $len   = $cig; 
     $len      =~ s/M$//;
-    my $ini   = $pos - 1;
+    my $ini   = $pos;
     my $end   = $ini + $len;
     my @ex    = ();
     for (my $i = $ini; $i <= $end; $i++) { 
@@ -214,5 +220,7 @@ sub decodeMap {
         $m++;
         $ncig .= $m . 'M';
     }
+
+    warn "$hit => $nhit, $pos => $npos, $cig => $ncig, $dir => $ndir\n" if (defined $verbose);
     return ($nhit, $npos, $ncig, $ndir);
 }
