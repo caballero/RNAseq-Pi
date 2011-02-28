@@ -196,13 +196,11 @@ sub decodeMap {
     my $len   = $cig; 
     $len      =~ s/M$//;
     my $ini   = $pos;
-    my $end   = $ini + $len;
+    my $end   = $ini + $len - 1;
     my @ex    = ();
     for (my $i = $ini; $i <= $end; $i++) { 
         push @ex, $exons[$i];
     }
-    my $arr1 = length @exons;
-    my $arr2 = length @ex;
     
     @ex   = reverse (@ex) if ($odir eq '-');
     $ini  = $ex[1];
