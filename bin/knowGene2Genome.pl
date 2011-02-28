@@ -150,7 +150,7 @@ while (<>) {
     my $pos  = $line[3];
     my $cig  = $line[5];
     next unless ($cig =~ m/^\d+M$/); # only exact matches for now (no indels/masking)
-    unless (defined $$gtf{$hit}{'trs'}) {
+    unless (defined $gtf{$hit}{'trs'}) {
         warn "undefined exon information for $read $hit $pos $cig\n" if (defined $verbose);
         next;
     }
