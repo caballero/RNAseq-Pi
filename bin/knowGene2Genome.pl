@@ -120,9 +120,10 @@ while (<GTF>) {
     my $dir = $line[6];
     $gtf{$tid}{'chr'}   = $chr;
     $gtf{$tid}{'dir'}   = $dir;
-    for (my $i = $ini; $i <= $end; $i++) {
-        $gtf{$tid}{'trs'}  .= "$i:";
-    }
+    my @pos = ();
+    push @pos, $ini .. $end;
+    $gtf{$tid}{'trs'}  .= join ":", @pos;
+    $gtf{$tid}{'trs'}  .= ":";
 }
 
 # ordering bases in transcripts
@@ -200,8 +201,8 @@ sub decodeMap {
     }
     my $arr1 = length @exons;
     my $arr2 = length @ex;
-    warn "substring $hit $pos $len $ini-$end $arr1 $arr2 @ex\n" if (defined $verbose);
-    @ex   = sort { $a<=>$b } (@ex);
+    
+    @ex   = reverse (@ex) if ($odir eq '-');
     $ini  = $ex[1];
     $end  = $ex[-1];
     $npos = $ini;
@@ -210,7 +211,7 @@ sub decodeMap {
         $ncig = $len . 'M';
     } else {
         my $m = 0;
-        for (my $i = 0; $i <= (length @ex) - 1; $i++) {
+        for (my $i = 0; $i <= $#ex - 1; $i++) {
             my $diff = $ex[$i + 1] - $ex[$i];
             if ($diff == 1) {
                 $m++;
@@ -224,6 +225,6 @@ sub decodeMap {
         $ncig .= $m . 'M';
     }
 
-    #warn "$hit => $nhit, $pos => $npos, $cig => $ncig, $dir => $ndir\n" if (defined $verbose);
+    warn "$hit => $nhit, $pos => $npos, $cig => $ncig, $dir => $ndir\n" if (defined $verbose);
     return ($nhit, $npos, $ncig, $ndir);
 }
