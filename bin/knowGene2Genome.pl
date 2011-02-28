@@ -187,7 +187,7 @@ sub decodeMap {
     elsif ($odir eq '-' and $dir eq '-') { $ndir = '+'; }
     elsif ($odir eq '+' and $dir eq '-') { $ndir = '-'; }
     elsif ($odir eq '-' and $dir eq '+') { $ndir = '-'; }
-    else { die "error comparing directions for $hit:$pos:$dir:$cig\n"; }
+    #else { die "error comparing directions for $hit:$pos:$dir:$cig\n"; }
     
     my @exons = split (/:/, $gtf{$hit}{'trs'});
     my $len   = $cig; 
@@ -198,6 +198,9 @@ sub decodeMap {
     for (my $i = $ini; $i <= $end; $i++) { 
         push @ex, $exons[$i];
     }
+    my $arr1 = length @exons;
+    my $arr2 = length @ex;
+    warn "substring $hit $pos $len $ini-$end $arr1 $arr2\n" if (defined $verbose);
     @ex = sort { $a<=>$b } (@ex);
     $ini = $ex[1];
     $end = $ex[-1];
@@ -221,6 +224,6 @@ sub decodeMap {
         $ncig .= $m . 'M';
     }
 
-    warn "$hit => $nhit, $pos => $npos, $cig => $ncig, $dir => $ndir\n" if (defined $verbose);
+    #warn "$hit => $nhit, $pos => $npos, $cig => $ncig, $dir => $ndir\n" if (defined $verbose);
     return ($nhit, $npos, $ncig, $ndir);
 }
