@@ -136,7 +136,6 @@ foreach my $tid (keys %gtf) {
         @bases = sort { $b<=>$a } (@bases);
     }
     $gtf{$tid}{'trs'} = join ':', @bases;
-    warn "$tid $gtf{$tid}{'dir'} $gtf{$tid}{'trs'}\n" if (defined $verbose);
 }
 
 # parsing the SAM file
@@ -201,7 +200,7 @@ sub decodeMap {
     }
     my $arr1 = length @exons;
     my $arr2 = length @ex;
-    warn "substring $hit $pos $len $ini-$end $arr1 $arr2\n" if (defined $verbose);
+    warn "substring $hit $pos $len $ini-$end $arr1 $arr2 @ex\n" if (defined $verbose);
     @ex   = sort { $a<=>$b } (@ex);
     $ini  = $ex[1];
     $end  = $ex[-1];
