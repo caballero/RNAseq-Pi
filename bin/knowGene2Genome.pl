@@ -150,7 +150,12 @@ while (<>) {
         my ($new_hit, $new_pos, $new_cig, $new_dir) = decodeMap($hit, $pos, $cig, $dir);
         next if (defined $redundant{"$read:$new_hit:$new_pos:$new_cig"});
         $redundant{"$read:$new_hit:$new_pos:$new_cig"}++;
-        if ($new_dir eq '+') { $line[1] = 0; } else { $line[1] = 16; }
+        if ($new_dir eq '+') { 
+            $line[1] = 0; 
+        } 
+        else { 
+            $line[1] = 16; 
+        }
         $line[2] = $new_hit;
         $line[3] = $new_pos;
         $line[5] = $new_cig;
@@ -183,7 +188,7 @@ sub decodeMap {
     for (my $i = $ini; $i <= $end; $i++) { 
         push @ex, $exons[$i];
     }
-    @ex = sort {$a<=>$b} (@ex);
+    @ex = sort { $a<=>$b } (@ex);
     $ini = $ex[1];
     $end = $ex[-1];
     $npos = $ini;
@@ -196,7 +201,8 @@ sub decodeMap {
             my $diff = $ex[$i + 1] - $ex[$i];
             if ($diff == 1) {
                 $m++;
-            } else {
+            } 
+            else {
                 $ncig .= $m . 'M' . $diff . 'N';
                 $m = 0;
             }
