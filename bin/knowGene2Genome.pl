@@ -76,7 +76,8 @@ my $gtf_file = undef;         # annotation GTF
 my $excluded = undef;         # excluded sequences
 
 # Main variables
-my %gtf = ();                    # transcript structure information
+my %gtf       = ();           # transcript structure information
+my %redundant = ();           # remove redudant hits
 
 # Calling options
 GetOptions(
