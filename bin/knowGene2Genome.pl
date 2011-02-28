@@ -143,13 +143,13 @@ while (<>) {
     my $hit  = $line[2];
     my $pos  = $line[3];
     my $cig  = $line[5];
-    next unless ($cig =~ m/^\d+M$/; # only good matches for now (no indels/masking)
+    next unless ($cig =~ m/^\d+M$/); # only good matches for now (no indels/masking)
     my $dir  = '+'; 
     $dir = '-' if ($flag == 16);
     if (defined $gtf{$hit}{'chr'}) {
         my ($new_hit, $new_pos, $new_cig, $new_dir) = decodeMap($hit, $pos, $cig, $dir);
-        next if (defined $redundant{"$read:$new_hit:$new_pos:$new_cig"});
-        $redundant{"$read:$new_hit:$new_pos:$new_cig"}++;
+        #next if (defined $redundant{"$read:$new_hit:$new_pos:$new_cig"});
+        #$redundant{"$read:$new_hit:$new_pos:$new_cig"}++;
         if ($new_dir eq '+') { 
             $line[1] = 0; 
         } 
@@ -172,14 +172,14 @@ sub decodeMap {
     my ($nhit, $npos, $ncig, $ndir);
     $nhit = $gtf{$hit}{'chr'};
     
-    my $odir = $gtf{$tid}{'dir'};
+    my $odir = $gtf{$hit}{'dir'};
     if    ($odir eq '+' and $dir eq '+') { $ndir = '+'; }
     elsif ($odir eq '-' and $dir eq '-') { $ndir = '+'; }
     elsif ($odir eq '+' and $dir eq '-') { $ndir = '-'; }
     elsif ($odir eq '-' and $dir eq '+') { $ndir = '-'; }
     else { die "error comparing directions for $hit:$pos:$dir:$cig\n"; }
     
-    my @exons = @{ $gtf{$h}{'trs'} };
+    my @exons = @{ $gtf{$hit}{'trs'} };
     my $len   = $cig; 
     $len      =~ s/M$//;
     my $ini   = $pos - 1;
