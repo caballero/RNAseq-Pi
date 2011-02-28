@@ -209,7 +209,7 @@ sub decodeMap {
     $npos = $ini;
 
     if ($end - $ini == $len) {
-        $ncig = $len . 'M';
+        $ncig = $cig;
     } else {
         my $m = 0;
         for (my $i = 0; $i <= $#ex - 1; $i++) {
