@@ -89,7 +89,7 @@ GetOptions(
 ) or pod2usage(-verbose => 2);
 
 pod2usage(-verbose => 2) if     (defined $help);
-pod2usage(-verbose => 2) unless (defined $gft_file);
+pod2usage(-verbose => 2) unless (defined $gtf_file);
 
 # opening files (if required)
 open GTF, "$gtf_file" or die "cannot open $gtf_file\n";
@@ -106,7 +106,7 @@ if (defined $excluded) {
     open BAD, ">$excluded" or die "cannot write file $excluded\n";
 }
 
-warn "loading transcript information from $gft_file\n" if (defined $verbose);
+warn "loading transcript information from $gtf_file\n" if (defined $verbose);
 while (<GTF>) {
     my @line = split (/\t/, $_);
     next unless ($line[2] eq 'exon');
