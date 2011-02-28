@@ -131,6 +131,7 @@ while (<GTF>) {
 warn "sorting transcripts\n" if (defined $verbose);
 foreach my $tid (keys %gtf) {
     $gtf{$tid}{'trs'} =~ s/:$//;
+    $gtf{$tid}{'trs'} =~ s/^://;
     my @bases = split (/:/, $gtf{$tid}{'trs'});
     if ($gtf{$tid}{'dir'} eq '+') {
         @bases = sort { $a<=>$b } (@bases);
@@ -208,7 +209,7 @@ sub decodeMap {
     $end  = $ex[-1];
     $npos = $ini;
 
-    warn "something wrong with ini=$ini end=$end len=$len $hit $pos $cig $dir\n" unless (defined $ini and defined $end and defined $len); 
+    warn "something wrong with ini=$ini end=$end len=$len $hit $pos $cig $dir @ex\n" unless (defined $ini and defined $end and defined $len); 
     if ($end - $ini == $len) {
         $ncig = $cig;
     } else {
