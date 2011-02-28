@@ -115,6 +115,7 @@ while (<GTF>) {
     next unless (m/transcript_id "(.+?)"/);
     my $tid = $1;
     my $chr = $line[0];
+    next unless ($chr =~ m/^chr\d+$/ or $chr =~ m/^chr[MYX]$/); # skip other haplotypes
     my $ini = $line[3];
     my $end = $line[4];
     my $dir = $line[6];
@@ -224,7 +225,5 @@ sub decodeMap {
         $m++;
         $ncig .= $m . 'M';
     }
-
-    warn "$hit => $nhit, $pos => $npos, $cig => $ncig, $dir => $ndir\n" if (defined $verbose);
     return ($nhit, $npos, $ncig, $ndir);
 }
