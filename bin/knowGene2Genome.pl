@@ -118,21 +118,20 @@ while (<GTF>) {
     my $dir = $line[6];
     $gtf{$tid}{'chr'}   = $chr;
     $gtf{$tid}{'dir'}   = $dir;
-    my @trans = ();
-    for (my $i = $ini; $i <= $end; $i++) {
-        push @{ $gtf{$tid}{'trs'} }, $i;
-    }
+    $gtf{$tid}{'trs'}  .= "$i:";
 }
 
 # ordering bases in transcripts
 warn "sorting transcripts\n" if (defined $verbose);
 foreach my $tid (keys %gtf) {
-    my @bases = @{ $gtf{$tid}{'trs'} };
+    $gtf{$tid}{'trs'} =~ s/:$//;
+    my @bases = split (/:/, $gtf{$tid}{'trs'});
     if ($gtf{$tid}{'dir'} eq '+') {
-        @{ $gtf{$tid}{'trs'} } = sort { $a<=>$b } (@bases);
+        @bases = sort { $a<=>$b } (@bases);
     } else {
-        @{ $gtf{$tid}{'trs'} } = sort { $b<=>$a } (@bases);
-    }   
+        @bases = sort { $b<=>$a } (@bases);
+    }
+    $gtf{$tid}{'trs'} = join ':', @bases;
 }
 
 # parsing the SAM file
@@ -181,7 +180,7 @@ sub decodeMap {
     elsif ($odir eq '-' and $dir eq '+') { $ndir = '-'; }
     else { die "error comparing directions for $hit:$pos:$dir:$cig\n"; }
     
-    my @exons = @{ $gtf{$hit}{'trs'} };
+    my @exons = split (/:/, $gtf{$hit}{'trs'});
     my $len   = $cig; 
     $len      =~ s/M$//;
     my $ini   = $pos - 1;
