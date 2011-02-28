@@ -127,7 +127,11 @@ while (<GTF>) {
 # ordering bases in transcripts
 foreach my $tid (keys %gtf) {
     my @bases = @{ $gtf{$tid}{'trs'} };
-    @{ $gtf{$tid}{'trs'} } = sort { $a<=>$b } (@bases);
+    if ($gtf{$tid}{'dir'} eq '+') {
+        @{ $gtf{$tid}{'trs'} } = sort { $a<=>$b } (@bases);
+    } else {
+        @{ $gtf{$tid}{'trs'} } = sort { $b<=>$a } (@bases);
+    }   
 }
 
 # parsing the SAM file
@@ -139,7 +143,9 @@ while (<>) {
     my $hit  = $line[2];
     my $pos  = $line[3];
     my $cig  = $line[5];
-    my $dir  = '+'; $dir = '-' if ($flag % 16 == 0);
+    next unless ($cig =~ m/^\d+M$/; # only good matches for now (no indels/masking)
+    my $dir  = '+'; 
+    $dir = '-' if ($flag == 16);
     if (defined $gtf{$hit}{'chr'}) {
         my ($new_hit, $new_pos, $new_cig, $new_dir) = decodeMap($hit, $pos, $cig, $dir);
         next if (defined $redundant{"$read:$new_hit:$new_pos:$new_cig"});
@@ -148,6 +154,7 @@ while (<>) {
         $line[2] = $new_hit;
         $line[3] = $new_pos;
         $line[5] = $new_cig;
+        push @line, "YT:Z:$hit";
         $_ = join ("\t", @line);
         print $_;
     } else {
@@ -168,19 +175,34 @@ sub decodeMap {
     else { die "error comparing directions for $hit:$pos:$dir:$cig\n"; }
     
     my @exons = @{ $gtf{$h}{'trs'} };
-    $npos = $exons[$pos];
-    my @cig   = split (/(\d+\w)/, $cig);
-    my $n = $pos;
-    foreach my $slice (@cig) {
-        next unless ($splice =~ m/\d+\w/);
-        if ($slice =~ m/(\d+)M$/) {
-                    }
-        elsif ($slice =~ m/(\d+)[IDN]$/) {
-            $ncig .= $slice;
+    my $len   = $cig; 
+    $len      =~ s/M$//;
+    my $ini   = $pos - 1;
+    my $end   = $ini + $len;
+    my @ex    = ();
+    for (my $i = $ini; $i <= $end; $i++) { 
+        push @ex, $exons[$i];
+    }
+    @ex = sort {$a<=>$b} (@ex);
+    $ini = $ex[1];
+    $end = $ex[-1];
+    $npos = $ini;
+
+    if ($end - $ini == $len) {
+        $ncig = $len . 'M';
+    } else {
+        my $m = 0;
+        for (my $i = 0; $i <= (length @ex) - 1; $i++) {
+            my $diff = $ex[$i + 1] - $ex[$i];
+            if ($diff == 1) {
+                $m++;
+            } else {
+                $ncig .= $m . 'M' . $diff . 'N';
+                $m = 0;
+            }
         }
-        else {
-            
-        }
+        $m++;
+        $ncig .= $m . 'M';
     }
     return ($nhit, $npos, $ncig, $ndir);
 }
