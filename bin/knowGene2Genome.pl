@@ -153,7 +153,7 @@ while (<>) {
     my $cig  = $line[5];
     next unless ($cig =~ m/^\d+M$/); # only exact matches for now (no indels/masking)
     unless (defined $gtf{$hit}{'trs'}) {
-        warn "undefined exon information for $read $hit $pos $cig\n" if (defined $verbose);
+        #warn "undefined exon information for $read $hit $pos $cig\n" if (defined $verbose);
         next;
     }
     my $dir  = '+'; 
@@ -208,6 +208,7 @@ sub decodeMap {
     $end  = $ex[-1];
     $npos = $ini;
 
+    warn "something wrong with ini=$ini end=$end len=$len $hit $pos $cig $dir\n" unless (defined $ini and defined $end and defined $len); 
     if ($end - $ini == $len) {
         $ncig = $cig;
     } else {
