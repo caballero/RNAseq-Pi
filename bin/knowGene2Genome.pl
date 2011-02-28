@@ -118,7 +118,9 @@ while (<GTF>) {
     my $dir = $line[6];
     $gtf{$tid}{'chr'}   = $chr;
     $gtf{$tid}{'dir'}   = $dir;
-    $gtf{$tid}{'trs'}  .= "$i:";
+    for (my $i = $ini; $i <= $end; $i++) {
+        $gtf{$tid}{'trs'}  .= "$i:";
+    }
 }
 
 # ordering bases in transcripts
