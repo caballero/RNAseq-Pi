@@ -123,7 +123,6 @@ while (<GTF>) {
     for (my $i = $ini; $i <= $end; $i++) {
         $gtf{$tid}{'trs'}  .= "$i:";
     }
-    warn "$tid $chr $dir $ini $end $gtf{$tid}{'trs'}\n" if (defined $verbose);
 }
 
 # ordering bases in transcripts
@@ -137,6 +136,7 @@ foreach my $tid (keys %gtf) {
         @bases = sort { $b<=>$a } (@bases);
     }
     $gtf{$tid}{'trs'} = join ':', @bases;
+    warn "$tid $gtf{$tid}{'dir'} $gtf{$tid}{'trs'}\n" if (defined $verbose);
 }
 
 # parsing the SAM file
