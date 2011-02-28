@@ -125,6 +125,7 @@ while (<GTF>) {
 }
 
 # ordering bases in transcripts
+warn "sorting transcripts\n" if (defined $verbose);
 foreach my $tid (keys %gtf) {
     my @bases = @{ $gtf{$tid}{'trs'} };
     if ($gtf{$tid}{'dir'} eq '+') {
@@ -135,6 +136,7 @@ foreach my $tid (keys %gtf) {
 }
 
 # parsing the SAM file
+warn "parsing SAM file\n" if (defined $verbose);
 while (<>) {
     next if (m/^\@/); # skip SAM headers
     my @line = split (/\t/, $_);
@@ -143,7 +145,7 @@ while (<>) {
     my $hit  = $line[2];
     my $pos  = $line[3];
     my $cig  = $line[5];
-    next unless ($cig =~ m/^\d+M$/); # only good matches for now (no indels/masking)
+    next unless ($cig =~ m/^\d+M$/); # only exact matches for now (no indels/masking)
     my $dir  = '+'; 
     $dir = '-' if ($flag == 16);
     if (defined $gtf{$hit}{'chr'}) {
