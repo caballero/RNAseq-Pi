@@ -123,6 +123,7 @@ while (<GTF>) {
     for (my $i = $ini; $i <= $end; $i++) {
         $gtf{$tid}{'trs'}  .= "$i:";
     }
+    warn "$tid $chr $dir $ini $end $gtf{$tid}{'trs'}\n" if (defined $verbose);
 }
 
 # ordering bases in transcripts
@@ -201,9 +202,9 @@ sub decodeMap {
     my $arr1 = length @exons;
     my $arr2 = length @ex;
     warn "substring $hit $pos $len $ini-$end $arr1 $arr2\n" if (defined $verbose);
-    @ex = sort { $a<=>$b } (@ex);
-    $ini = $ex[1];
-    $end = $ex[-1];
+    @ex   = sort { $a<=>$b } (@ex);
+    $ini  = $ex[1];
+    $end  = $ex[-1];
     $npos = $ini;
 
     if ($end - $ini == $len) {
