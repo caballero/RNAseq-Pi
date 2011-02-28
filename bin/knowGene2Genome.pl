@@ -76,7 +76,7 @@ my $gtf_file = undef;         # annotation GTF
 my $excluded = undef;         # excluded sequences
 
 # Main variables
-%gtf = ();                    # transcript structure information
+my %gtf = ();                    # transcript structure information
 
 # Calling options
 GetOptions(
@@ -85,7 +85,7 @@ GetOptions(
     'i|input:s'        => \$input,
     'o|output:s'       => \$output,
     'g|gtf=s'          => \$gtf_file,
-    'e|excluded:s'     => \$exlcuded
+    'e|excluded:s'     => \$excluded
 ) or pod2usage(-verbose => 2);
 
 pod2usage(-verbose => 2) if     (defined $help);
@@ -120,7 +120,7 @@ while (<GTF>) {
     $gtf{$tid}{'dir'}   = $dir;
     my @trans = ();
     for (my $i = $ini; $i <= $end; $i++) {
-        push @{ $gtf{$tid}{'trs'} }, $p;
+        push @{ $gtf{$tid}{'trs'} }, $i;
     }
 }
 
