@@ -114,11 +114,14 @@ while (<GTF>) {
     next unless ($line[2] eq 'exon');
     next unless (m/transcript_id "(.+?)"/);
     my $tid = $1;
+    
     my $chr = $line[0];
     next unless ($chr =~ m/^chr\d+$/ or $chr =~ m/^chr[MYX]$/); # skip other haplotypes
+    
     my $ini = $line[3];
     my $end = $line[4];
     my $dir = $line[6];
+    
     $gtf{$tid}{'chr'}   = $chr;
     $gtf{$tid}{'dir'}   = $dir;
     my @pos = ();
@@ -135,7 +138,8 @@ foreach my $tid (keys %gtf) {
     my @bases = split (/:/, $gtf{$tid}{'trs'});
     if ($gtf{$tid}{'dir'} eq '+') {
         @bases = sort { $a<=>$b } (@bases);
-    } else {
+    } 
+    else {
         @bases = sort { $b<=>$a } (@bases);
     }
     $gtf{$tid}{'trs'} = join ':', @bases;
@@ -175,7 +179,8 @@ while (<>) {
         push @line, "YT:Z:$hit";
         $_ = join ("\t", @line);
         print "$_\n";
-    } else {
+    } 
+    else {
         print BAD $_ if (defined $excluded);
     }
 }
@@ -190,7 +195,7 @@ sub decodeMap {
     elsif ($odir eq '-' and $dir eq '-') { $ndir = '+'; }
     elsif ($odir eq '+' and $dir eq '-') { $ndir = '-'; }
     elsif ($odir eq '-' and $dir eq '+') { $ndir = '-'; }
-    #else { die "error comparing directions for $hit:$pos:$dir:$cig\n"; }
+    else { die "error comparing directions for $hit:$pos:$dir:$cig\n"; }
     
     my @exons = split (/:/, $gtf{$hit}{'trs'});
     my $len   = $cig; 
@@ -198,15 +203,16 @@ sub decodeMap {
     my $ini   = $pos - 1;
     my $end   = $ini + $len;
     my @ex    = @exons[$ini .. $end];
-    @ex   = reverse (@ex) if ($odir eq '-');
-    $ini  = $ex[1];
-    $end  = $ex[-1];
-    $npos = $ini;
+    @ex       = reverse (@ex) if ($odir eq '-');
+    $ini      = $ex[1];
+    $end      = $ex[-1];
+    $npos     = $ini - 1;
 
     warn "something wrong with ini=$ini end=$end len=$len $hit $pos $cig $dir @ex\n" unless (defined $ini and defined $end and defined $len); 
-    if ($end - $ini == $len) {
+    if (($end - $ini) == $len) {
         $ncig = $cig;
-    } else {
+    } 
+    else {
         my $m = 0;
         for (my $i = 0; $i <= $#ex - 1; $i++) {
             my $diff = $ex[$i + 1] - $ex[$i];
@@ -214,6 +220,7 @@ sub decodeMap {
                 $m++;
             } 
             else {
+                $m++;
                 $ncig .= $m . 'M' . $diff . 'N';
                 $m = 0;
             }
