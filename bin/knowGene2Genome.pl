@@ -207,7 +207,7 @@ sub decodeMap {
     if ($end - $ini == $len) {
         $ncig = $cig;
     } else {
-        my $m = 1;
+        my $m = 0;
         for (my $i = 0; $i <= $#ex - 1; $i++) {
             my $diff = $ex[$i + 1] - $ex[$i];
             if ($diff == 1) {
@@ -215,7 +215,7 @@ sub decodeMap {
             } 
             else {
                 $ncig .= $m . 'M' . $diff . 'N';
-                $m = 1;
+                $m = 0;
             }
         }
         $ncig .= $m . 'M';
