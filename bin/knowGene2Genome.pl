@@ -195,13 +195,9 @@ sub decodeMap {
     my @exons = split (/:/, $gtf{$hit}{'trs'});
     my $len   = $cig; 
     $len      =~ s/M$//;
-    my $ini   = $pos;
-    my $end   = $ini + $len - 1;
-    my @ex    = ();
-    for (my $i = $ini; $i <= $end; $i++) { 
-        push @ex, $exons[$i];
-    }
-    
+    my $ini   = $pos - 1;
+    my $end   = $ini + $len;
+    my @ex    = @exons[$ini .. $end];
     @ex   = reverse (@ex) if ($odir eq '-');
     $ini  = $ex[1];
     $end  = $ex[-1];
@@ -211,7 +207,7 @@ sub decodeMap {
     if ($end - $ini == $len) {
         $ncig = $cig;
     } else {
-        my $m = 0;
+        my $m = 1;
         for (my $i = 0; $i <= $#ex - 1; $i++) {
             my $diff = $ex[$i + 1] - $ex[$i];
             if ($diff == 1) {
@@ -219,10 +215,9 @@ sub decodeMap {
             } 
             else {
                 $ncig .= $m . 'M' . $diff . 'N';
-                $m = 0;
+                $m = 1;
             }
         }
-        $m++;
         $ncig .= $m . 'M';
     }
     return ($nhit, $npos, $ncig, $ndir);
