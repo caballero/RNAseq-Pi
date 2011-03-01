@@ -200,13 +200,13 @@ sub decodeMap {
     my @exons = split (/:/, $gtf{$hit}{'trs'});
     my $len   = $cig; 
     $len      =~ s/M$//;
-    my $ini   = $pos - 1;
+    my $ini   = $pos - 2;
     my $end   = $ini + $len;
     my @ex    = @exons[$ini .. $end];
     @ex       = reverse (@ex) if ($odir eq '-');
     $ini      = $ex[1];
     $end      = $ex[-1];
-    $npos     = $ini - 1;
+    $npos     = $ini;
 
     warn "something wrong with ini=$ini end=$end len=$len $hit $pos $cig $dir @ex\n" unless (defined $ini and defined $end and defined $len); 
     if (($end - $ini) == $len) {
