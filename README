@@ -20,37 +20,44 @@ A typical pipeline can be defined:
 | FASTQ file | ---> |      Preprocessing          |
 +------------+      +-----------------------------+
                                 |
-                                |
+								|
+                               \|/ 
                     +-----------------------------+
                     |     Low quality filter      | ---> Bad reads 
                     +-----------------------------+
                                 |
-                                |
+								|
+                               \|/
                     +-----------------------------+
                     |       Vector filter         | ---> Bad reads
                     +-----------------------------+
                                 |
-                                |
+								|
+                               \|/
                     +-----------------------------+
                     |     Low complexity filter   | ---> Bad reads
                     +-----------------------------+
                                 |
-                                |
+								|
+                               \|/
                     +-----------------------------+
                     |     Ribosomal + MT filter   | ---> Uninformative reads
                     +-----------------------------+
                                 |
-                                |
+								|
+                               \|/
                     +-----------------------------+
                     |    Repeat consensus filter  | ---> Uninformative reads
                     +-----------------------------+
                                 |
-                                |
+								|
+                               \|/
                     +-----------------------------+
                     |       Spike-ins filter      | ---> QC/Normalization reads
                     +-----------------------------+
                                 |
-                                |
+								|
+                               \|/
                     +-----------------------------+
                     |   Mapping                   |
                     |       Regular               |
@@ -60,7 +67,8 @@ A typical pipeline can be defined:
                     |       MapSplice             |          +---> CUFFLINKS
                     +-----------------------------+
                                 |
-                                |
+								|
+                               \|/
                     +-----------------------------+
                     |Other genome conservation    |
                     |Assembly                     |

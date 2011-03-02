@@ -23,6 +23,9 @@ OPTIONS:
    -o  --output     Write formated sequences here  File         STDOUT
    -g  --gtf        Read gene information from GTF File         none
    -x  --excluded   Excluded sequences             File         none
+   -u  --uniq       Remove redundant mapped reads               none
+   -t  --target     Add the target name as YT:                  none
+   -s  --sequences  Read preformated sequences     File         none
    -v  --verbose    Verbose mode                              
    -h  --help       Print this screen
 
@@ -34,7 +37,7 @@ perl knowGene2Genome.pl -g human.gtf [OPTIONS] < SAM > SAM
 
 perl knowGene2Genome.pl -g human.gtf -i SAM -o SAM
 
-perl knowGene2Genome.pl -g human.gtf -i SAM.gz > SAM
+perl knowGene2Genome.pl -g human.gtf -i SAM.gz -u -t > SAM
 
 =head1 AUTHOR
 
@@ -68,12 +71,14 @@ use Getopt::Long;
 use Pod::Usage;
 
 # Default parameters
-my $help     = undef;         # print help
-my $verbose  = undef;         # verbose mode
-my $input    = undef;         # input SAM
-my $output   = undef;         # output SAM
-my $gtf_file = undef;         # annotation GTF
-my $excluded = undef;         # excluded sequences
+my $help      = undef;        # print help
+my $verbose   = undef;        # verbose mode
+my $input     = undef;        # input SAM
+my $output    = undef;        # output SAM
+my $gtf_file  = undef;        # annotation GTF
+my $uniq      = undef;        # print uniquelly mapped reads
+my $target    = undef;        # add name of the original target name
+my $seq_file  = undef;        # pre-formated sequences file
 
 # Main variables
 my %gtf       = ();           # transcript structure information
@@ -86,15 +91,22 @@ GetOptions(
     'i|input:s'        => \$input,
     'o|output:s'       => \$output,
     'g|gtf=s'          => \$gtf_file,
-    'e|excluded:s'     => \$excluded
+    'e|excluded:s'     => \$excluded,
+	'u|uniq'           => \$uniq,
+	't|target'         => \$target,
+	's|sequences'      => \$seq_file
 ) or pod2usage(-verbose => 2);
 
 pod2usage(-verbose => 2) if     (defined $help);
-pod2usage(-verbose => 2) unless (defined $gtf_file);
+pod2usage(-verbose => 2) unless (defined $gtf_file or defined $seq_file);
 
 # opening files (if required)
-open GTF, "$gtf_file" or die "cannot open $gtf_file\n";
-
+if (defined $gtf_file) {
+	open GTF, "$gtf_file" or die "cannot open $gtf_file\n";
+}
+if (defined $seq_file) {
+	open SEQ, "$seq_file" or die "cannot open $seq_file\n";
+}
 if (defined $input) {
     $input = "gunzip  -c $input | " if ($input =~ m/gz$/);
     $input = "bunzip2 -c $input | " if ($input =~ m/bz2$/);
@@ -107,38 +119,51 @@ if (defined $excluded) {
     open BAD, ">$excluded" or die "cannot write file $excluded\n";
 }
 
-warn "loading transcript information from $gtf_file\n" if (defined $verbose);
-while (<GTF>) {
-    my @line = split (/\t/, $_);
-    next if ($line[1] =~ m/psudogene/i);
-    next unless ($line[2] eq 'exon');
-    next unless (m/transcript_id "(.+?)"/);
-    my $tid = $1;
+if (defined $gtf_file) {
+	warn "loading transcript information from $gtf_file\n" if (defined $verbose);
+	while (<GTF>) {
+		my @line = split (/\t/, $_);
+		next if ($line[1] =~ m/psudogene/i);
+		next unless ($line[2] eq 'exon');
+		next unless (m/transcript_id "(.+?)"/);
+		my $tid = $1;
     
-    my $chr = $line[0];
-    next unless ($chr =~ m/^chr\d+$/ or $chr =~ m/^chr[MYX]$/); # skip other haplotypes
+		my $chr = $line[0];
+		next unless ($chr =~ m/^chr\d+$/ or $chr =~ m/^chr[MYX]$/); # skip other haplotypes
     
-    my $ini = $line[3];
-    my $end = $line[4];
-    my $dir = $line[6];
+		my $ini = $line[3];
+		my $end = $line[4];
+		my $dir = $line[6];
     
-    $gtf{$tid}{'chr'}   = $chr;
-    $gtf{$tid}{'dir'}   = $dir;
-    my @pos = ();
-    push @pos, $ini .. $end;
-    $gtf{$tid}{'trs'}  .= join ":", @pos;
-    $gtf{$tid}{'trs'}  .= ":";
-}
+		$gtf{$tid}{'chr'}   = $chr;
+		$gtf{$tid}{'dir'}   = $dir;
+		my @pos = ();
+		push @pos, $ini .. $end;
+		$gtf{$tid}{'trs'}  .= join ":", @pos;
+		$gtf{$tid}{'trs'}  .= ":";
+	}
 
-# ordering bases in transcripts
-warn "sorting transcripts\n" if (defined $verbose);
-foreach my $tid (keys %gtf) {
-    $gtf{$tid}{'trs'} =~ s/:$//;
-    $gtf{$tid}{'trs'} =~ s/^://;
-    my @bases = split (/:/, $gtf{$tid}{'trs'});
-    if ($gtf{$tid}{'dir'} eq '+') { @bases = sort { $a<=>$b } (@bases); } 
-    else                          { @bases = sort { $b<=>$a } (@bases); }
-    $gtf{$tid}{'trs'} = join ':', @bases;
+	# ordering bases in transcripts
+	warn "sorting transcripts\n" if (defined $verbose);
+	foreach my $tid (keys %gtf) {
+		$gtf{$tid}{'trs'} =~ s/:$//;
+		$gtf{$tid}{'trs'} =~ s/^://;
+		my @bases = split (/:/, $gtf{$tid}{'trs'});
+		if ($gtf{$tid}{'dir'} eq '+') { @bases = sort { $a<=>$b } (@bases); } 
+		else                          { @bases = sort { $b<=>$a } (@bases); }
+		$gtf{$tid}{'trs'} = join ':', @bases;
+	}
+}
+elsif (defined $seq_file) {
+	while (<SEQ>) {
+		chomp;
+		my ($tid, $chr, $dir, $pos) = split (/\t/, $_);
+		$gtf{$tid}{'chr'} = $chr;
+		$gtf{$tid}{'dir'} = $dir;
+		$gtf{$tid}{'trs'} = $pos;
+}
+else {
+	die "you did not load a sequence coordinates!\n";
 }
 
 # parsing the SAM file
@@ -153,7 +178,8 @@ while (<>) {
     my $pos  = $line[3];
     my $cig  = $line[5];
     next unless ($cig =~ m/^\d+M$/); # only exact matches for now (no indels/masking)
-    unless (defined $gtf{$hit}{'trs'}) {
+    
+	unless (defined $gtf{$hit}{'trs'}) {
         #warn "undefined exon information for $read $hit $pos $cig\n" if (defined $verbose);
         next;
     }
@@ -161,13 +187,24 @@ while (<>) {
     $dir = '-' if ($flag == 16);
     if (defined $gtf{$hit}{'chr'}) {
         my ($new_hit, $new_pos, $new_cig, $new_dir) = decodeMap($hit, $pos, $cig, $dir);
-        next if (defined $redundant{"$read:$new_hit:$new_pos:$new_cig"});
-        $redundant{"$read:$new_hit:$new_pos:$new_cig"}++;
+        if (defined $uniq) {
+			next if (defined $redundant{"$read:$new_hit:$new_pos:$new_cig"});
+			$redundant{"$read:$new_hit:$new_pos:$new_cig"} = 1;
+		}
+		
+		if ($dir ne $new_dir) { # swap positions in reverse hits
+			$line[9]  = rc($line[9]);
+			$line[10] = reverse($line[10]);
+		}
+		
         if ($new_dir eq '+') { $line[1] = 0; } else { $line[1] = 16; }
         $line[2] = $new_hit;
         $line[3] = $new_pos;
         $line[5] = $new_cig;
-        push @line, "YT:Z:$hit";
+		
+		if (defined $target) { # add target name
+			push @line, "YT:Z:$hit";
+		}
         $_ = join ("\t", @line);
         print "$_\n";
     } 
@@ -218,4 +255,11 @@ sub decodeMap {
         $ncig .= $m . 'M';
     }
     return ($nhit, $npos, $ncig, $ndir);
+}
+
+sub rc {
+	my $s = shift @_;
+	$s = reverse $s;
+	$s =~ tr/acgtACGT/tgcaTGCA/;
+	return $s;
 }
