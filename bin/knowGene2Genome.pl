@@ -283,6 +283,7 @@ sub load_gtf {
 }
 
 sub load_num_seq {
+    warn "loading transcript information from $seq_file\n" if (defined $verbose);
     my $seq_file_h = $seq_file;
     $seq_file_h = "gunzip  -c $seq_file | " if ($seq_file =~ m/\.gz$/);
     $seq_file_h = "bunzip2 -c $seq_file | " if ($seq_file =~ m/\.bz2$/);
