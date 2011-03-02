@@ -209,10 +209,8 @@ sub decodeMap {
             } 
             else {
                 $m++;
-                if ($m >= 3 or $m <= $#ex - 3) {
-                    $ncig .= $m . 'M' . $diff . 'N';
-                    $m = 0;
-                }
+                $ncig .= $m . 'M' . $diff . 'N';
+                $m = 0;
             }
         }
         $ncig .= $m . 'M';
