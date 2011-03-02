@@ -18,18 +18,21 @@ Altered fields are: TARGET, POS_TARGET, CIGAR
 perl knowGene2Genome.pl -g human.gtf [OPTIONS] < SAM > SAM
 
 OPTIONS:
-   Parameter        Description                    Values       Default
-   -i  --input      Read sequences from here       File**       STDIN
-   -o  --output     Write formated sequences here  File         STDOUT
-   -g  --gtf        Read gene information from GTF File         none
-   -e  --excluded   Excluded sequences             File         none
-   -u  --uniq       Remove redundant mapped reads               none
-   -t  --target     Add the target name as YT:                  none
-   -s  --sequences  Read preformated sequences     File         none
-   -v  --verbose    Verbose mode                              
-   -h  --help       Print this screen
+   Parameter         Description                      Values       Default
+   -i  --input       Read sequences from here         File*        STDIN
+   -o  --output      Write formated sequences here    File         STDOUT
+   -g  --gtf         Read gene information from GTF   File         none
+   -e  --excluded    Excluded sequences               File         none
+   -u  --uniq        Remove redundant mapped reads               
+   -t  --target      Add the target name as "YT:"                  
+   -s  --sequences   Read preformated sequences       File         
+   -w  --write_seqs  Write preformated sequences      File**
+   -n  --no-sam      Don't parse SAM file (for -w)
+   -v  --verbose     Verbose mode                              
+   -h  --help        Print this screen
 
-    ** File can be compressed (gzip/bzip2) but requires option -i
+   *  File can be compressed (gzip/bzip2) but requires option -i
+   ** Options and file names for -g and -s are required
     
 =head1 EXAMPLES
 
@@ -38,6 +41,8 @@ perl knowGene2Genome.pl -g human.gtf [OPTIONS] < SAM > SAM
 perl knowGene2Genome.pl -g human.gtf -i SAM -o SAM
 
 perl knowGene2Genome.pl -g human.gtf -i SAM.gz -u -t > SAM
+
+
 
 =head1 AUTHOR
 
@@ -80,6 +85,8 @@ my $uniq      = undef;        # print uniquelly mapped reads
 my $target    = undef;        # add name of the original target name
 my $seq_file  = undef;        # pre-formated sequences file
 my $excluded  = undef;        # print excluded sequences here
+my $no_sam    = undef;
+my $wr_seqs   = undef; 
 
 # Main variables
 my %gtf       = ();           # transcript structure information
@@ -95,7 +102,9 @@ GetOptions(
     'e|excluded:s'     => \$excluded,
 	'u|uniq'           => \$uniq,
 	't|target'         => \$target,
-	's|sequences'      => \$seq_file
+	's|sequences'      => \$seq_file,
+	'n|no-sam'         => \$no_sam,
+	'w|write_seqs'     => \$wr_seqs
 ) or pod2usage(-verbose => 2);
 
 pod2usage(-verbose => 2) if     (defined $help);
@@ -107,23 +116,14 @@ if (defined $input) {
     $input = "bunzip2 -c $input | " if ($input =~ m/bz2$/);
     open STDIN, "$input" or die "cannot read file $input\n";
 }
-if (defined $output) {
-    open STDOUT, ">$output" or die "cannot write file $output\n";
-}
-if (defined $excluded) {
-    open BAD, ">$excluded" or die "cannot write file $excluded\n";
-}
+open STDOUT, ">$output" or die "cannot write file $output\n" if (defined $output);
+open BAD, ">$excluded" or die "cannot write file $excluded\n" if (defined $excluded);
 
-if (defined $gtf_file) {
-    load_gtf();
-}
-elsif (defined $seq_file) {
-    load_num_seq();
-}
-else {
-	die "you did not load a sequence coordinates!\n";
-}
+if    (defined $gtf_file) { load_gtf(); }
+elsif (defined $seq_file) { load_num_seq(); }
+else { die "you didn't load the sequence coordinates!\n"; }
 
+exit 1 if (defined $no_sam);
 # parsing the SAM file
 warn "parsing SAM file\n" if (defined $verbose);
 while (<>) {
@@ -230,7 +230,16 @@ sub load_gtf {
     $gtf_file_h = "gunzip  -c $gtf_file | " if ($gtf_file =~ m/\.gz$/);
     $gtf_file_h = "bunzip2 -c $gtf_file | " if ($gtf_file =~ m/\.bz2$/);
     open GTF, "$gtf_file_h" or die "cannot open $gtf_file\n";
-    open FT, ">hs37.61_transcripts.data" or die "cannot open file\n";
+    
+    if (defined $wr_seqs) {
+        if (defined $seq_file) {
+            open FT, ">$seq_file" or die "cannot open file $seq_file\n";
+        }
+        else
+        {
+            die "please define -s\n";
+        }
+    }
     
 	warn "loading transcript information from $gtf_file\n" if (defined $verbose);
 	while (<GTF>) {
@@ -264,12 +273,13 @@ sub load_gtf {
 		if ($gtf{$tid}{'dir'} eq '+') { @bases = sort { $a<=>$b } (@bases); } 
 		else                          { @bases = sort { $b<=>$a } (@bases); }
 		$gtf{$tid}{'trs'} = join ':', @bases;
-		print FT join "\t", $tid, $gtf{$tid}{'chr'}, $gtf{$tid}{'dir'}, $gtf{$tid}{'trs'};
-		print FT "\n";
+		if (defined $wr_seqs) {
+		    print FT join "\t", $tid, $gtf{$tid}{'chr'}, $gtf{$tid}{'dir'}, $gtf{$tid}{'trs'};
+		    print FT "\n";
+		}
 	}
-	close FT;
+	close FT if (defined $wr_seqs);
 	close GTF;
-	exit 1;
 }
 
 sub load_num_seq {
