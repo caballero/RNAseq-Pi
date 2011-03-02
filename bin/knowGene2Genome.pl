@@ -120,6 +120,8 @@ if (defined $excluded) {
 }
 
 if (defined $gtf_file) {
+    open FT, ">hs37.61_transripts.data" or die "cannot open file\n";
+    
 	warn "loading transcript information from $gtf_file\n" if (defined $verbose);
 	while (<GTF>) {
 		my @line = split (/\t/, $_);
@@ -152,7 +154,11 @@ if (defined $gtf_file) {
 		if ($gtf{$tid}{'dir'} eq '+') { @bases = sort { $a<=>$b } (@bases); } 
 		else                          { @bases = sort { $b<=>$a } (@bases); }
 		$gtf{$tid}{'trs'} = join ':', @bases;
+		print FT join "\t", $tid, $gtf{$tid}{'chr'}, $gtf{$tid}{'dir'}, $gtf{$tid}{'trs'};
+		print FT "\n";
 	}
+	close FT;
+	exit 1;
 }
 elsif (defined $seq_file) {
 	while (<SEQ>) {
