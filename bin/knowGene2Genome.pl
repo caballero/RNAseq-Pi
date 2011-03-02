@@ -22,7 +22,7 @@ OPTIONS:
    -i  --input      Read sequences from here       File**       STDIN
    -o  --output     Write formated sequences here  File         STDOUT
    -g  --gtf        Read gene information from GTF File         none
-   -x  --excluded   Excluded sequences             File         none
+   -e  --excluded   Excluded sequences             File         none
    -u  --uniq       Remove redundant mapped reads               none
    -t  --target     Add the target name as YT:                  none
    -s  --sequences  Read preformated sequences     File         none
@@ -79,6 +79,7 @@ my $gtf_file  = undef;        # annotation GTF
 my $uniq      = undef;        # print uniquelly mapped reads
 my $target    = undef;        # add name of the original target name
 my $seq_file  = undef;        # pre-formated sequences file
+my $excluded  = undef;        # print excluded sequences here
 
 # Main variables
 my %gtf       = ();           # transcript structure information
