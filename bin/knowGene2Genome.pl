@@ -136,12 +136,8 @@ foreach my $tid (keys %gtf) {
     $gtf{$tid}{'trs'} =~ s/:$//;
     $gtf{$tid}{'trs'} =~ s/^://;
     my @bases = split (/:/, $gtf{$tid}{'trs'});
-    if ($gtf{$tid}{'dir'} eq '+') {
-        @bases = sort { $a<=>$b } (@bases);
-    } 
-    else {
-        @bases = sort { $b<=>$a } (@bases);
-    }
+    if ($gtf{$tid}{'dir'} eq '+') { @bases = sort { $a<=>$b } (@bases); } 
+    else                          { @bases = sort { $b<=>$a } (@bases); }
     $gtf{$tid}{'trs'} = join ':', @bases;
 }
 
@@ -165,14 +161,9 @@ while (<>) {
     $dir = '-' if ($flag == 16);
     if (defined $gtf{$hit}{'chr'}) {
         my ($new_hit, $new_pos, $new_cig, $new_dir) = decodeMap($hit, $pos, $cig, $dir);
-        #next if (defined $redundant{"$read:$new_hit:$new_pos:$new_cig"});
-        #$redundant{"$read:$new_hit:$new_pos:$new_cig"}++;
-        if ($new_dir eq '+') { 
-            $line[1] = 0; 
-        } 
-        else { 
-            $line[1] = 16; 
-        }
+        next if (defined $redundant{"$read:$new_hit:$new_pos:$new_cig"});
+        $redundant{"$read:$new_hit:$new_pos:$new_cig"}++;
+        if ($new_dir eq '+') { $line[1] = 0; } else { $line[1] = 16; }
         $line[2] = $new_hit;
         $line[3] = $new_pos;
         $line[5] = $new_cig;
@@ -208,7 +199,6 @@ sub decodeMap {
     $end      = $ex[-1];
     $npos     = $ini;
 
-    warn "something wrong with ini=$ini end=$end len=$len $hit $pos $cig $dir @ex\n" unless (defined $ini and defined $end and defined $len); 
     if (($end - $ini) == $len) {
         $ncig = $cig;
     } 
