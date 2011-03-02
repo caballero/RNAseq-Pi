@@ -102,12 +102,6 @@ pod2usage(-verbose => 2) if     (defined $help);
 pod2usage(-verbose => 2) unless (defined $gtf_file or defined $seq_file);
 
 # opening files (if required)
-if (defined $gtf_file) {
-	open GTF, "$gtf_file" or die "cannot open $gtf_file\n";
-}
-if (defined $seq_file) {
-	open SEQ, "$seq_file" or die "cannot open $seq_file\n";
-}
 if (defined $input) {
     $input = "gunzip  -c $input | " if ($input =~ m/gz$/);
     $input = "bunzip2 -c $input | " if ($input =~ m/bz2$/);
@@ -121,53 +115,10 @@ if (defined $excluded) {
 }
 
 if (defined $gtf_file) {
-    open FT, ">hs37.61_transripts.data" or die "cannot open file\n";
-    
-	warn "loading transcript information from $gtf_file\n" if (defined $verbose);
-	while (<GTF>) {
-		my @line = split (/\t/, $_);
-		next if ($line[1] =~ m/psudogene/i);
-		next unless ($line[2] eq 'exon');
-		next unless (m/transcript_id "(.+?)"/);
-		my $tid = $1;
-    
-		my $chr = $line[0];
-		next unless ($chr =~ m/^chr\d+$/ or $chr =~ m/^chr[MYX]$/); # skip other haplotypes
-    
-		my $ini = $line[3];
-		my $end = $line[4];
-		my $dir = $line[6];
-    
-		$gtf{$tid}{'chr'}   = $chr;
-		$gtf{$tid}{'dir'}   = $dir;
-		my @pos = ();
-		push @pos, $ini .. $end;
-		$gtf{$tid}{'trs'}  .= join ":", @pos;
-		$gtf{$tid}{'trs'}  .= ":";
-	}
-
-	# ordering bases in transcripts
-	warn "sorting transcripts\n" if (defined $verbose);
-	foreach my $tid (keys %gtf) {
-		$gtf{$tid}{'trs'} =~ s/:$//;
-		$gtf{$tid}{'trs'} =~ s/^://;
-		my @bases = split (/:/, $gtf{$tid}{'trs'});
-		if ($gtf{$tid}{'dir'} eq '+') { @bases = sort { $a<=>$b } (@bases); } 
-		else                          { @bases = sort { $b<=>$a } (@bases); }
-		$gtf{$tid}{'trs'} = join ':', @bases;
-		print FT join "\t", $tid, $gtf{$tid}{'chr'}, $gtf{$tid}{'dir'}, $gtf{$tid}{'trs'};
-		print FT "\n";
-	}
-	close FT;
-	exit 1;
+    load_gtf();
 }
 elsif (defined $seq_file) {
-	while (<SEQ>) {
-		chomp;
-		my ($tid, $chr, $dir, $pos) = split (/\t/, $_);
-		$gtf{$tid}{'chr'} = $chr;
-		$gtf{$tid}{'dir'} = $dir;
-		$gtf{$tid}{'trs'} = $pos;
+    load_num_seq();
 }
 else {
 	die "you did not load a sequence coordinates!\n";
@@ -220,6 +171,9 @@ while (<>) {
     }
 }
 
+#-----------------------------------------------#
+#           S U B R O U T I N E S               #
+#-----------------------------------------------#
 sub decodeMap {
     my ($hit, $pos, $cig, $dir) = @_;
     my ($nhit, $npos, $ncig, $ndir);
@@ -269,4 +223,66 @@ sub rc {
 	$s = reverse $s;
 	$s =~ tr/acgtACGT/tgcaTGCA/;
 	return $s;
+}
+
+sub load_gtf {
+    my $gtf_file_h = $gtf_file;
+    $gtf_file_h = "gunzip  -c $gtf_file | " if ($gtf_file =~ m/\.gz$/);
+    $gtf_file_h = "bunzip2 -c $gtf_file | " if ($gtf_file =~ m/\.bz2$/);
+    open GTF, "$gtf_file_h" or die "cannot open $gtf_file\n";
+    open FT, ">hs37.61_transcripts.data" or die "cannot open file\n";
+    
+	warn "loading transcript information from $gtf_file\n" if (defined $verbose);
+	while (<GTF>) {
+		my @line = split (/\t/, $_);
+		next if ($line[1] =~ m/psudogene/i);
+		next unless ($line[2] eq 'exon');
+		next unless (m/transcript_id "(.+?)"/);
+		my $tid = $1;
+    
+		my $chr = $line[0];
+		next unless ($chr =~ m/^chr\d+$/ or $chr =~ m/^chr[MYX]$/); # skip other haplotypes
+    
+		my $ini = $line[3];
+		my $end = $line[4];
+		my $dir = $line[6];
+    
+		$gtf{$tid}{'chr'}   = $chr;
+		$gtf{$tid}{'dir'}   = $dir;
+		my @pos = ();
+		push @pos, $ini .. $end;
+		$gtf{$tid}{'trs'}  .= join ":", @pos;
+		$gtf{$tid}{'trs'}  .= ":";
+	}
+
+	# ordering bases in transcripts
+	warn "sorting transcripts\n" if (defined $verbose);
+	foreach my $tid (keys %gtf) {
+		$gtf{$tid}{'trs'} =~ s/:$//;
+		$gtf{$tid}{'trs'} =~ s/^://;
+		my @bases = split (/:/, $gtf{$tid}{'trs'});
+		if ($gtf{$tid}{'dir'} eq '+') { @bases = sort { $a<=>$b } (@bases); } 
+		else                          { @bases = sort { $b<=>$a } (@bases); }
+		$gtf{$tid}{'trs'} = join ':', @bases;
+		print FT join "\t", $tid, $gtf{$tid}{'chr'}, $gtf{$tid}{'dir'}, $gtf{$tid}{'trs'};
+		print FT "\n";
+	}
+	close FT;
+	close GTF;
+	exit 1;
+}
+
+sub load_num_seq {
+    my $seq_file_h = $seq_file;
+    $seq_file_h = "gunzip  -c $seq_file | " if ($seq_file =~ m/\.gz$/);
+    $seq_file_h = "bunzip2 -c $seq_file | " if ($seq_file =~ m/\.bz2$/);
+  	open SEQ, "$seq_file_h" or die "cannot open $seq_file\n";
+	while (<SEQ>) {
+		chomp;
+		my ($tid, $chr, $dir, $pos) = split (/\t/, $_);
+		$gtf{$tid}{'chr'} = $chr;
+		$gtf{$tid}{'dir'} = $dir;
+		$gtf{$tid}{'trs'} = $pos;
+	}
+	close SEQ;
 }
