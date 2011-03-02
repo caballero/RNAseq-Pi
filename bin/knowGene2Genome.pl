@@ -102,7 +102,7 @@ GetOptions(
     'e|excluded:s'     => \$excluded,
 	'u|uniq'           => \$uniq,
 	't|target'         => \$target,
-	's|sequences'      => \$seq_file,
+	's|sequences:s'    => \$seq_file,
 	'n|no-sam'         => \$no_sam,
 	'w|write_seqs'     => \$wr_seqs
 ) or pod2usage(-verbose => 2);
