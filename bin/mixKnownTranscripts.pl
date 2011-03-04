@@ -42,11 +42,14 @@ use warnings;
 use Getopt::Long;
 use Pod::Usage;
 
-my $pair1  = undef;
-my $pair2  = undef;
-my $fusion = undef;
-my $output = undef;
-my $unpair = undef;
+# Option variables
+my $help    = undef;
+my $verbose = undef;
+my $pair1   = undef;
+my $pair2   = undef;
+my $fusion  = undef;
+my $output  = undef;
+my $unpair  = undef;
 
 # Global variables
 my %reads  = ();
@@ -80,11 +83,11 @@ $pair2_h = "bunzip2 -c $pair2 | " if ($pair2 =~ m/\.bz2$/);
 open P2, "$pair2_h" or die "cannot open $pair2\n";
 
 if (defined $fusion) {
-	open FS ">$fusion" or die "cannot write $fusion\n";
+	open FS, ">$fusion" or die "cannot write $fusion\n";
 }
 
 if (defined $unpair) {
-	open UP ">$unpair" or die "cannot write $unpair\n";
+	open UP, ">$unpair" or die "cannot write $unpair\n";
 }
 
 if (defined $output) {
