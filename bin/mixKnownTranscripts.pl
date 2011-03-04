@@ -104,7 +104,7 @@ while (<P1>) {
 	$tot1++ unless (defined $reads{$id}{'1'});
 	$id =~ s/#.+$//;
 	$hit  = $line[3];
-	$reads{$id}{'1'}{$hit} = $bit;
+	$reads{$id}{'1'} .= "$hit:";
 }
 
 warn "loading $pair2\n" if (defined $verbose);
@@ -117,17 +117,26 @@ while (<P2>) {
 	$tot2++ unless (defined $reads{$id}{'2'});
 	$id =~ s/#.+$//;
 	$hit  = $line[3];
-	$reads{$id}{'2'}{$hit} = $bit;
+	$reads{$id}{'2'} .= "$hit:";
 }
 
 warn "wow, I'm still alive, pairing reads\n" if (defined $verbose);
 foreach $id (keys %reads) {
 	$tot++;
 	if (defined $reads{$id}{'1'}) {
+	    $reads{$id}{'1'} =~ s/:$//;
 		$paired = 0;
 		if (defined $reads{$id}{'2'}) {
-			foreach $hit (keys %{ $reads{$id}{'1'} }) {
-				if (defined $reads{$id}{'2'}{$hit}) {
+		    $reads{$id}{'2'} =~ s/:$//;
+		    my @hits1 = split (/:/, $reads{$id}{'1'});
+		    my @hits2 = split (/:/, $reads{$id}{'2'});
+		    my %hits1 = ();
+		    my %hits2 = ();
+		    foreach $hit (@hits1) { $hits1{$hit} = 1; }
+		    foreach $hit (@hits2) { $hits2{$hit} = 1; }
+		    
+			foreach $hit (keys %hits1) {
+				if (defined $hits2{$hit}) {
 					$paired = 1;
 					$num_par++;
 					print "$id\t$hit\n";
@@ -136,25 +145,22 @@ foreach $id (keys %reads) {
 			if ($paired == 0) {
 				$num_fus++;
 				if (defined $fusion) {
-					print FS "$id\t"; 
-					print FS join (":", keys %{ $reads{$id}{'1'} });
-					print FS "\t";
-					print FS join (":", keys %{ $reads{$id}{'2'} });
-					print FS "\n";
+					print FS "$id\t", $reads{$id}{'1'}, "\t", $reads{$id}{'2'}, "\n";
 				}
 			}
 		}
 		else {
 			$num_orph1++;
 			if (defined $unpair) {
-				print UP "$id\t", join (":", keys %{ $reads{$id}{'1'} }), "\tNA\n";
+				print UP "$id\t", $reads{$id}{'1'}, "\tNA\n";
 			}
 		}
 	}
 	else {
 		if (defined $unpair) {
+		    $reads{$id}{'2'} =~ s/:$//;
 			$num_orph2++;
-			print UP "$id\tNA\t", join (":", keys %{ $reads{$id}{'2'} }), "\n";
+			print UP "$id\tNA\t", $reads{$id}{'2'}, "\n";
 		}
 	}
 }
