@@ -129,7 +129,7 @@ if (defined $barcode and !defined $output) {
 if (defined $input) {
     $input = "gunzip  -c $input | " if ($input =~ m/gz$/);
     $input = "bunzip2 -c $input | " if ($input =~ m/bz2$/);
-    open STDIN, "<$input" or die "cannot read file $input\n";
+    open STDIN, "$input" or die "cannot read file $input\n";
 }
 if (defined $output and !defined $barcode) {
     open STDOUT, ">$output" or die "cannot write file $output\n";
