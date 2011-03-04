@@ -104,7 +104,7 @@ while (<P1>) {
 	$tot1++ unless (defined $reads{$id}{'1'});
 	$id =~ s/#.+$//;
 	$hit  = $line[3];
-	$reads{$id}{'1'} .= "$hit:";
+	$reads{$id}{'1'} .= "$hit,";
 }
 
 warn "loading $pair2\n" if (defined $verbose);
@@ -117,19 +117,19 @@ while (<P2>) {
 	$tot2++ unless (defined $reads{$id}{'2'});
 	$id =~ s/#.+$//;
 	$hit  = $line[3];
-	$reads{$id}{'2'} .= "$hit:";
+	$reads{$id}{'2'} .= "$hit,";
 }
 
 warn "wow, I'm still alive, pairing reads\n" if (defined $verbose);
 foreach $id (keys %reads) {
 	$tot++;
 	if (defined $reads{$id}{'1'}) {
-	    $reads{$id}{'1'} =~ s/:$//;
+	    $reads{$id}{'1'} =~ s/,$//;
 		$paired = 0;
 		if (defined $reads{$id}{'2'}) {
-		    $reads{$id}{'2'} =~ s/:$//;
-		    my @hits1 = split (/:/, $reads{$id}{'1'});
-		    my @hits2 = split (/:/, $reads{$id}{'2'});
+		    $reads{$id}{'2'} =~ s/,$//;
+		    my @hits1 = split (/,/, $reads{$id}{'1'});
+		    my @hits2 = split (/,/, $reads{$id}{'2'});
 		    my %hits1 = ();
 		    my %hits2 = ();
 		    foreach $hit (@hits1) { $hits1{$hit} = 1; }
@@ -158,7 +158,7 @@ foreach $id (keys %reads) {
 	}
 	else {
 		if (defined $unpair) {
-		    $reads{$id}{'2'} =~ s/:$//;
+		    $reads{$id}{'2'} =~ s/,$//;
 			$num_orph2++;
 			print UP "$id\tNA\t", $reads{$id}{'2'}, "\n";
 		}
