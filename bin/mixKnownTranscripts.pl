@@ -125,7 +125,7 @@ foreach $id (keys %reads) {
 	$tot++;
 	if (defined $reads{$id}{'1'}) {
 		$paired = 0;
-		if (defined $reads{$id}{'2'} {
+		if (defined $reads{$id}{'2'}) {
 			foreach $hit (keys %{ $reads{$id}{'1'} }) {
 				if (defined $reads{$id}{'2'}{$hit}) {
 					$paired = 1;
