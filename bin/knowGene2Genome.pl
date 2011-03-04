@@ -42,8 +42,6 @@ perl knowGene2Genome.pl -g human.gtf -i SAM -o SAM
 
 perl knowGene2Genome.pl -g human.gtf -i SAM.gz -u -t > SAM
 
-
-
 =head1 AUTHOR
 
 Juan Caballero

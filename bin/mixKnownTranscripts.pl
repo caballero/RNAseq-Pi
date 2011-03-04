@@ -6,11 +6,35 @@ mixKnownTranscripts.pl
 
 =head1 DESCRIPTION
 
+Parse 2 SAM files (paired-end reads mapped to known transcripts), it can verify  
+the reads mapped are in the same transcript (correct pairing), if one of the 
+pairs is missing (unpaired/orphan read) or if one read map one transcript and 
+the other another (potential gene fusion). Beware memory issues, it loads all
+the reads in RAM.
+
 =head1 USAGE
 
+perl mixKnownTranscripts.pl -1 pair_1.sam -2 pair_2.sam [OPTIONS]
 
+OPTIONS:
+   Parameter         Description                      Values       Default
+   -1  --pair1       SAM file for pair #1             File*        
+   -2  --pair2       SAM file for pair #2             File*
+   -o  --output      Repoert paired reads here        File         STDOUT
+   -f  --fusion      Report potential fusions here    File
+   -u  --unpair      Report unpaired reads here       File
+   -v  --verbose     Verbose mode                              
+   -h  --help        Print this screen
+
+   * File can be compressed (gzip/bzip2)
+    
 =head1 EXAMPLES
 
+perl mixKnownTranscripts.pl -1 pair_1.sam -2 pair_2.sam > paired.out
+
+perl mixKnownTranscripts.pl -1 pair_1.sam.gz -2 pair_2.sam.gz -o paired.out
+
+perl mixKnownTranscripts.pl -1 p1.sam -2 p2.sam -f fusion.out -u unpair.out -o paired.out
 
 =head1 AUTHOR
 
@@ -100,10 +124,10 @@ while (<P1>) {
 	my @line = split (/\t/, $_);
 	$id   = $line[0];
 	$bit  = $line[1];
+	$hit  = $line[2];
 	next if ($bit == 4);
 	$tot1++ unless (defined $reads{$id}{'1'});
 	$id =~ s/#.+$//;
-	$hit  = $line[3];
 	$reads{$id}{'1'} .= "$hit,";
 }
 
@@ -113,10 +137,10 @@ while (<P2>) {
 	my @line = split (/\t/, $_);
 	$id   = $line[0];
 	$bit  = $line[1];
+	$hit  = $line[2];
 	next if ($bit == 4);
 	$tot2++ unless (defined $reads{$id}{'2'});
 	$id =~ s/#.+$//;
-	$hit  = $line[3];
 	$reads{$id}{'2'} .= "$hit,";
 }
 
