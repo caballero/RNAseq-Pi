@@ -48,7 +48,11 @@ my $fusion = undef;
 my $output = undef;
 my $unpair = undef;
 
-my %reads2 = ();
+# Global variables
+my %reads  = ();
+my ($id, $bit, $hit, $paired);
+my ($num_par, $num_orph1, $num_orph2, $num_fus);
+my ($tot, $tot1, $tot2);
 
 # Calling options
 GetOptions(
@@ -75,4 +79,86 @@ $pair2_h = "gunzip  -c $pair2 | " if ($pair2 =~ m/\.gz$/);
 $pair2_h = "bunzip2 -c $pair2 | " if ($pair2 =~ m/\.bz2$/);
 open P2, "$pair2_h" or die "cannot open $pair2\n";
 
+if (defined $fusion) {
+	open FS ">$fusion" or die "cannot write $fusion\n";
+}
 
+if (defined $unpair) {
+	open UP ">$unpair" or die "cannot write $unpair\n";
+}
+
+if (defined $output) {
+    open STDOUT, ">$output" or die "cannot write file $output\n";
+}
+
+warn "loading $pair1\n" if (defined $verbose);
+while (<P1>) {
+	next if (m/^\@/);
+	my @line = split (/\t/, $_);
+	$id   = $line[0];
+	$bit  = $line[1];
+	next if ($bit == 4);
+	$tot1++ unless (defined $reads{$id}{'1'});
+	$id =~ s/#.+$//;
+	$hit  = $line[3];
+	$reads{$id}{'1'}{$hit} = $bit;
+}
+
+warn "loading $pair2\n" if (defined $verbose);
+while (<P2>) {
+	next if (m/^\@/);
+	my @line = split (/\t/, $_);
+	$id   = $line[0];
+	$bit  = $line[1];
+	next if ($bit == 4);
+	$tot2++ unless (defined $reads{$id}{'2'});
+	$id =~ s/#.+$//;
+	$hit  = $line[3];
+	$reads{$id}{'2'}{$hit} = $bit;
+}
+
+warn "wow, I'm still alive, pairing reads\n" if (defined $verbose);
+foreach $id (keys %reads) {
+	$tot++;
+	if (defined $reads{$id}{'1'}) {
+		$paired = 0;
+		if (defined $reads{$id}{'2'} {
+			foreach $hit (keys %{ $reads{$id}{'1'} }) {
+				if (defined $reads{$id}{'2'}{$hit}) {
+					$paired = 1;
+					$num_par++;
+					print "$id\t$hit\n";
+				}
+			}
+			if ($paired == 0) {
+				$num_fus++;
+				if (defined $fusion) {
+					print FS "$id\t"; 
+					print FS join (":", keys %{ $reads{$id}{'1'} });
+					print FS "\t";
+					print FS join (":", keys %{ $reads{$id}{'2'} });
+					print FS "\n";
+				}
+			}
+		}
+		else {
+			$num_orph1++;
+			if (defined $unpair) {
+				print UP "$id\t", join (":", keys %{ $reads{$id}{'1'} }), "\tNA\n";
+			}
+		}
+	}
+	else {
+		if (defined $unpair) {
+			$num_orph2++;
+			print UP "$id\tNA\t", join (":", keys %{ $reads{$id}{'2'} }), "\n";
+		}
+	}
+}
+
+if (defined $verbose) {
+	warn "Total reads: $tot\nReads in $pair1: $tot1\nReads in $pair2: $tot2\n";
+	warn "Paired reads: $num_par\n";
+	warn "Fusion detected: $num_fus\n" if (defined $fusion);
+	warn "Orphans in $pair1: $num_orph1\nOrphans in $pair2: $num_orph2\n" if (defined $unpair); 
+}
