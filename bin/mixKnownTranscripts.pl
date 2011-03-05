@@ -180,12 +180,15 @@ foreach $id (keys %reads) {
 			}
 		}
 	}
-	else {
+	elsif (defined $reads{$id}{'2'}) {
 		if (defined $unpair) {
 		    $reads{$id}{'2'} =~ s/,$//;
 			$num_orph2++;
 			print UP "$id\tNA\t", $reads{$id}{'2'}, "\n";
 		}
+	}
+	else {
+	    warn "how do I get here? something weird with $id\n" if (defined $verbose);
 	}
 }
 
