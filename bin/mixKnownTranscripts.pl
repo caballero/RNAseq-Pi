@@ -127,7 +127,7 @@ while (<P1>) {
 	$hit  = $line[2];
 	next if ($bit == 4);
 	$tot1++ unless (defined $reads{$id}{'1'});
-	$id =~ s/#.+$//;
+	$id =~ s/....$//;
 	$reads{$id}{'1'} .= "$hit,";
 }
 
@@ -140,7 +140,7 @@ while (<P2>) {
 	$hit  = $line[2];
 	next if ($bit == 4);
 	$tot2++ unless (defined $reads{$id}{'2'});
-	$id =~ s/#.+$//;
+	$id =~ s/....$//;
 	$reads{$id}{'2'} .= "$hit,";
 }
 
