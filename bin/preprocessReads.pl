@@ -246,7 +246,7 @@ sub removeBases {
     my $len  = length $$ref_seq;
     my @pos  = getPositions($ref_range, $len);
     my $q    = $$ref_qual;
-    $q =~ s/\^/\\\^/g;
+    $q =~ s/\\/\\\\/g;
     my @seq  = split (//, $$ref_seq);
     my @qual = split (//, $q) if (defined $$ref_qual);
     foreach my $p (@pos) {
