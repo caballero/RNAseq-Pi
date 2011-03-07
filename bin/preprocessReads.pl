@@ -243,12 +243,16 @@ sub maskBases {
 # Return: nothing
 sub removeBases {
     my ($ref_range, $ref_seq, $ref_qual) = @_;
-    my $len = length $$ref_seq;
-    my @pos = getPositions($ref_range, $len);
+    my $len  = length $$ref_seq;
+    my @pos  = getPositions($ref_range, $len);
+    my @seq  = split (//, $$ref_seq);
+    my @qual = split (//, $$ref_qual) if (defined $$ref_qual);
     foreach my $p (@pos) {
-        substr($$ref_seq,  $p, 1) = 'X';
-        substr($$ref_qual, $p, 1) = 'X' if (defined $$ref_qual);
+        $seq[$p]  = 'X';
+        $qual[$p] = 'X' if (defined $$ref_qual);
     }
+    $$ref_seq  = join "", @seq;
+    $$ref_qual = join "", @qual;
 }
 
 # selectBases -> Delete bases not in a sequence array
