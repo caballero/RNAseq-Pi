@@ -60,6 +60,7 @@ my $help    = undef;
 my $verbose = undef;
 my $output  = undef;
 my $name    = undef;
+my $exclude = undef;
 my $dir     = '.';
 
 # Global variables
@@ -71,6 +72,7 @@ GetOptions(
     'v|verbose'        => \$verbose,
     'n|name:s'         => \$name,
     'd|dir:s'          => \$dir,
+    'e|exclude:s'      => \$exclude,
     'o|output:s'       => \$output
 );
 
@@ -87,6 +89,10 @@ if (defined $output) {
 while ($file = readdir DIR) {
     if (defined $name) {
         next unless ($file =~ m/$name/);
+    }
+    
+    if (defined $exclude) {
+        next if ($file =~ m/$exclude/);
     }
     
     next unless ($file =~ m/[$types](.gz|.bz2)*$/i);
