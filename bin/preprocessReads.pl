@@ -145,8 +145,8 @@ if ($format eq 'fq') {
         maskBases(\$mask, \$seq)             if (defined $mask);
         removeBases(\$remove, \$seq, \$qual) if (defined $remove);
         selectBases(\$select, \$seq, \$qual) if (defined $select);
-        $seq  =~ s/X//g;
-        $qual =~ s/X//g;
+        $seq  =~ s/x//g;
+        $qual =~ s/x//g;
         
         if (defined $barcode) {
             $code = substr($seq, 0, $barcode);
@@ -188,7 +188,7 @@ elsif ($format eq 'fa') {
         maskBases(\$mask,     \$seq) if (defined $mask);
         removeBases(\$remove, \$seq) if (defined $remove);
         selectBases(\$select, \$seq) if (defined $select);
-        $seq =~ s/X//g;
+        $seq =~ s/x//g;
         
         if (defined $barcode) {
             $code = substr($seq, 0, $barcode);
@@ -243,18 +243,12 @@ sub maskBases {
 # Return: nothing
 sub removeBases {
     my ($ref_range, $ref_seq, $ref_qual) = @_;
-    my $len  = length $$ref_seq;
-    my @pos  = getPositions($ref_range, $len);
-    my $q    = $$ref_qual;
-    $q =~ s/\\/\\\\/g;
-    my @seq  = split (//, $$ref_seq);
-    my @qual = split (//, $q) if (defined $$ref_qual);
+    my $len = length $$ref_seq;
+    my @pos = getPositions($ref_range, $len);
     foreach my $p (@pos) {
-        $seq[$p]  = 'X';
-        $qual[$p] = 'X' if (defined $$ref_qual);
+        substr($$ref_seq,  $p, 1) = 'x';
+        substr($$ref_qual, $p, 1) = 'x' if (defined $$ref_qual);
     }
-    $$ref_seq  = join "", @seq;
-    $$ref_qual = join "", @qual;
 }
 
 # selectBases -> Delete bases not in a sequence array
@@ -276,8 +270,8 @@ sub selectBases {
     }
     
     foreach my $p (@pos) {
-        substr($$ref_seq,  $p, 1) = 'X';
-        substr($$ref_qual, $p, 1) = 'X' if (defined $$ref_qual);
+        substr($$ref_seq,  $p, 1) = 'x';
+        substr($$ref_qual, $p, 1) = 'x' if (defined $$ref_qual);
     }
 }
 
