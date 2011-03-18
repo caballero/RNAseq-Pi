@@ -18,6 +18,9 @@ OPTIONS:
     -d  --dir       Check files in DIR          PATH        local dir
     -n  --name      Analyze files with NAME     NAME        all files
     -o  --output    Write output here           FILE        STDOUT
+    -e  --exclude   Exclude files with NAME     NAME        
+    -v  --verbose   Verbose mode
+    -h  --help      Print this screen
 
 =head1 EXAMPLES
 
