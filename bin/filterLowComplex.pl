@@ -285,7 +285,7 @@ __INFO__
 # Return: nothing
 sub flushSeqs  {
     $nbatch += $seqs{'num'};
-    warn "processed $nbatch seqs\n" if (defined $verbose);
+    #warn "processed $nbatch seqs\n" if (defined $verbose);
     print $seqs{'good'} if (defined $seqs{'good'});
     print BAD $seqs{'bad'} if (defined $wr_bad and defined $seqs{'bad'});
     $seqs{'num'}  = 0;
