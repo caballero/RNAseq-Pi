@@ -93,7 +93,7 @@ my $end       = undef;
 GetOptions(
     'h|help'           => \$help,
     'v|verbose'        => \$verbose,
-    'i|input:s'        => \$intput,
+    'i|input:s'        => \$input,
     '1|uniq:s'         => \$uniq,
     'u|unmap:s'        => \$unmap,
     'p|poly:s'         => \$poly,
@@ -143,6 +143,7 @@ while (<>) {
         else {
             die "NM: field is missing, aborting!\n";
         }
+    }
 }
 
 $end = time;
