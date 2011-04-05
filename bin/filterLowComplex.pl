@@ -89,8 +89,10 @@ my $minsize  = 25;            # Minimal sequence size after trim
 my $trim     = undef;         # Trim the sequences in 3' region
 my $lim      = 0.02;          # Complexity cut-off
 my $batch    = 100000;        # Write to disk in batches
+my $version  = undef;         # Version call flag
 
 # Main variables
+my $our_version = 0.1;        # Script version number
 my $id       = undef;         # Sequence ID
 my $seq      = undef;         # Sequence
 my $sep      = undef;         # Fastq separator '+'
@@ -122,11 +124,12 @@ GetOptions(
     'w|window:i'       => \$win,
     't|trim'           => \$trim,
     'n|minsize:i'      => \$minsize,
-    'g|group:i'        => \$batch
+    'g|group:i'        => \$batch,
+    'version'          => \$version
 ) or pod2usage(-verbose => 2);
     
 pod2usage(-verbose => 2) if (defined $help);
-
+printVersion() if (defined $version);
 pod2usage(-verbose => 2) unless ($method =~ m/ce|cwf|cl|cz|cm|ct/);
 
 # Aditional module for cz
@@ -556,5 +559,11 @@ sub countWords {
 		$count{$elem}++;
 	}
 	return %count;
+}
+
+# printVersion => return version number
+sub printVersion {
+    print "$0 $our_version\n";
+    exit 1;
 }
 
