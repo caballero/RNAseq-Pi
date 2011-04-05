@@ -97,8 +97,10 @@ my $minsize  = 25;            # Minimal size after trimming
 my $win      = 25;            # Window to use
 my $vec_q    = 'B' x 100;     # Vector of minimal quality scores
 my $batch    = 100000;        # Sequences by batch
+my $version  = undef;         # Version call flag
 
 # Main variables
+my $our_version = 0.1;        # Script version number
 my $id       = undef;         # Sequence ID
 my $seq      = undef;         # Sequence
 my $sep      = undef;         # Fastq separator '+'
@@ -138,10 +140,12 @@ GetOptions(
     't|trim'           => \$trim,
     'w|window:i'       => \$win,
     'g|group:i'        => \$batch,
-    'm|minsize:i'      => \$minsize
+    'm|minsize:i'      => \$minsize,
+    'version'          => \$version
 ) or pod2usage(-verbose => 2);
     
 pod2usage(-verbose => 2) if (defined $help);
+printVersion() if(defined $version);
 
 die "You didn't select a filter!\n" unless ( $fil_n ne 'Y' or $fil_q ne 'Y' or $fil_v ne 'Y');
 
@@ -480,5 +484,11 @@ sub validateQual {
     my $ok = 1;
     $ok = 0 if ($q =~ m/[^\@ABCDEFGHIJKLMNOPQRSTUVWXYZ\[\\\]\^\_\`abcdefgh]/);
     return $ok;
+}
+
+# printVersion => return version number
+sub printVersion {
+    print "$0 $our_version\n";
+    exit 1;
 }
 
