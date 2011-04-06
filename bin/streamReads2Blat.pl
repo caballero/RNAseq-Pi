@@ -197,7 +197,7 @@ sub checkHit {
 				$nhit = 1;
             }
             elsif ($score == $best) {
-                $res .= '|';
+                $res .= ';';
                 $res .= join ":", @array;
 				$nhit++;
             }
