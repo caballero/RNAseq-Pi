@@ -141,7 +141,7 @@ while (<>) {
             }
         }
         else {
-            die "NM: field is missing, aborting!\n";
+            die "IH field is missing, aborting!\n";
         }
     }
 }
