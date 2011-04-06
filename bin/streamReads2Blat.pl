@@ -6,12 +6,34 @@ streamReads2Blat.pl
 
 =head1 DESCRIPTION
 
+Create a pseudo stream to query a file with reads to a serial blat searches.
+Each read is classified in one of the index o declared not found.
+The Blat gfServers must be active with the same index/port configuration (use
+blatServers.pl script before).
 
 =head1 USAGE
 
+perl streamReads2Blat.pl -i FASTQ -o ALIGN
+
+OPTIONS
+    Parameters         Description                         Value     Default
+    -i --input         Input file*                         FILE      STDIN
+	-o --output        Output file                         FILE      STDOUT
+	-f --format        Input format                        fq/fa     fq
+	
+	-h --help          Print this screen
+	-v --verbose       Activate verbose mode
+	--version          Print version number
+	
+* Input file can be compressed (.gz|.bz2)
 
 =head1 EXAMPLES
 
+perl streamReads2Blat.pl -i reads.fq.gz -o align.out
+
+perl streamReads2Blat.pl -i reads.fa -f fa -o align.out
+
+perl streamReads2Blat.pl < reads.fq > align.out
 
 =head1 AUTHOR
 
@@ -118,7 +140,7 @@ elsif ($format eq 'fa') {
         $id =~ s/>//;
         writeFa($id, $seq);
         my $hit = searchHit($id, $seq);
-        print $hit; 
+        print "$hit\n"; 
     }
 }
 else {
@@ -156,7 +178,7 @@ sub searchHit {
 sub runBlat {
     my $target = shift @_;
     my $port   = $indexes{$target}{'port'};
-    system ("$gfclient $host $port / -nohead $fasta $psl");
+    system ("$gfclient $host $port / -nohead $fasta $psl > /dev/null");
 }
 
 sub checkHit {
@@ -164,18 +186,23 @@ sub checkHit {
     if (-s $psl) {
         open PSL, "$psl" or die "cannot open $psl\n";
         my $best = -1;
+		my $nhit = 0;
         while (<PSL>) {
+			chomp;
             my @array = split (/\t/, $_);
             my $score = $array[0] - $array[1];
             if ($score > $best) {
-                $res = join ":", @array;
+                $res  = join ":", @array;
+				$best = $score;
+				$nhit = 1;
             }
             elsif ($score == $best) {
                 $res .= '|';
-                $res = join ":", @array;
+                $res .= join ":", @array;
+				$nhit++;
             }
         }
         close PSL;
     }
-    return $res;
+    return "$nhit\t$res";
 }
