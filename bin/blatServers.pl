@@ -6,12 +6,28 @@ blatServers.pl
 
 =head1 DESCRIPTION
 
+Launch or stop Blat gfServers. 
 
 =head1 USAGE
 
+perl blatServers.pl [OPTIONS]
 
+OPTIONS
+    Parameter          Description   
+	-s --start         Start servers 
+	-x --stop          Stop servers
+
+	-h --help          Print this screen
+	-v --verbose       Activate verbose mode
+	--version          Print version number
+	
 =head1 EXAMPLES
 
+Launch servers:
+    perl blatServers.pl -s
+	
+Stop servers:
+    perl blatServers.pl -x
 
 =head1 AUTHOR
 
@@ -51,24 +67,26 @@ my $start     = undef;         # start servers flag
 my $stop      = undef;         # stop servers flag
 
 # Configuration
+my $our_version = 0.1;
 my $index_dir = '/proj/hoodlab/share/programs/blat-indexes'; 
 my $gfserver  = '/proj/hoodlab/share/programs/blat/gfServer';
 my $param     = '-canStop';
 my $host      = 'localhost';
 
 my %indexes   = ();
-$indexes{'solexa_primers.2bit'}{'port'}          = 1111;
-$indexes{'human.GRCh37.61.rRNA-MT.2bit'}{'port'} = 1112;
-$indexes{'human_RepBase15.10.2bit'}{'port'}      = 1113;
-$indexes{'ERCC_reference_081215.2bit'}{'port'}   = 1114;
-$indexes{'hs37.61.2bit'}{'port'}                 = 1115;
+$indexes{'solexa_primers.2bit'}          = 1111;
+$indexes{'human.GRCh37.61.rRNA-MT.2bit'} = 1112;
+$indexes{'human_RepBase15.10.2bit'}      = 1113;
+$indexes{'ERCC_reference_081215.2bit'}   = 1114;
+$indexes{'hs37.61.2bit'}                 = 1115;
 
 # Calling options
 GetOptions(
     'h|help'           => \$help,
     'v|verbose'        => \$verbose,
     's|start'          => \$start,
-    'x|stop'           => \$stop
+    'x|stop'           => \$stop,
+	'version'          => \$version
 ) or pod2usage(-verbose => 2);
     
 pod2usage(-verbose => 2) if (defined $help);
@@ -78,15 +96,22 @@ printVersion() if(defined $version);
 
 if (defined $start) {
     foreach my $idx (keys %indexes) {
-        my $port = $indexes{$idx}{'port'};
+        my $port = $indexes{$idx};
         my $log  = $idx;
         $log =~ s/2bit/log/;
+		warn "launching server for $idx using host=$host, port=$port, log=$log\n" if (defined $verbose);
         system ("$gfserver start $host $port $param -log=$log $index_dir/$idx &");
     }
 }
 else {
     foreach my $idx (keys %indexes) {
         my $port = $indexes{$idx}{'port'};
+		warn "stoping server for $idx in host=$host, port=$port\n" if (defined $verbose);
         system ("$gfserver stop $host $port");
     }
+}
+
+sub printVersion {
+	print "$0 $our_version\n";
+	exit 1;
 }
