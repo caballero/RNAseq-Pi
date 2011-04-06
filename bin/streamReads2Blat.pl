@@ -191,6 +191,7 @@ sub checkHit {
     if (-s $psl) {
 	    warn "checking hist in $psl\n" if (defined $verbose);
         open PSL, "$psl" or die "cannot open $psl\n";
+		local $/ = "\n";
         while (<PSL>) {
 			chomp;
             my @array = split (/\t/, $_);
