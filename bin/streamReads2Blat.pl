@@ -79,17 +79,18 @@ my $minident  = 90;            # minimal identity percent
 
 # Main variables
 my $our_version = 0.1;
-my $index_dir = '/proj/hoodlab/share/programs/blat-indexes'; # Blat indexes dir
-my $fasta     = 'read.fa';
-my $psl       = 'read.psl';
-my $gfclient  = '/proj/hoodlab/share/programs/blat/gfClient';
-my $host    = 'localhost';
-my @indexes   = (   'solexa_primers.2bit',
+my $time_ini    = time;
+my $index_dir   = '/proj/hoodlab/share/programs/blat-indexes'; # Blat indexes dir
+my $fasta       = 'read.fa';
+my $psl         = 'read.psl';
+my $gfclient    = '/proj/hoodlab/share/programs/blat/gfClient';
+my $host        = 'localhost';
+my @indexes     = ( 'solexa_primers.2bit',
                     'human.GRCh37.61.rRNA-MT.2bit',
                     'human_RepBase15.10.2bit',
                     'ERCC_reference_081215.2bit',
                     'hs37.61.2bit'                     );
-my %indexes  = ();
+my %indexes     = ();
 $indexes{'solexa_primers.2bit'}{'name'}          = 'primer match';
 $indexes{'solexa_primers.2bit'}{'port'}          = 1111;
 $indexes{'human.GRCh37.61.rRNA-MT.2bit'}{'name'} = 'rRNA/MT match';
@@ -156,6 +157,9 @@ else {
 unlink "$fasta";
 unlink "$psl";
 
+my $time_end = time;
+my $time_dif = $time_end - $time_ini;
+warn "Query takes $time_dif seconds\n" if (defined $verbose);
 
 # SUBROUTINES
 
@@ -202,7 +206,7 @@ sub checkHit {
 			chomp;
             my @array = split (/\t/, $_);
             my $score = (2 * $array[0]) - $array[1];
-			warn "calculated score=$score (2 x $array[0] - $array[1])\n" if (defined $verbose);
+			#warn "calculated score=$score (2 x $array[0] - $array[1])\n" if (defined $verbose);
             if ($score > $best) {
                 $res  = join ":", @array;
 				$best = $score;
