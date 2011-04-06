@@ -156,7 +156,7 @@ sub searchHit {
 sub runBlat {
     my $target = shift @_;
     my $port   = $indexes{$target}{'port'};
-    system ("$gfclient $host $port . -nohead $fasta $psl");
+    system ("$gfclient $host $port / -nohead $fasta $psl");
 }
 
 sub checkHit {
