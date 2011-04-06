@@ -182,11 +182,11 @@ sub runBlat {
 }
 
 sub checkHit {
-    my $res = undef;
+    my $res  = undef;
+	my $best = -1;
+	my $nhit = 0;
     if (-s $psl) {
         open PSL, "$psl" or die "cannot open $psl\n";
-        my $best = -1;
-		my $nhit = 0;
         while (<PSL>) {
 			chomp;
             my @array = split (/\t/, $_);
