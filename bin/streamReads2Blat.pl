@@ -163,7 +163,7 @@ elsif ($format eq 'fa') {
         print "$hit\n"; 
 		if ($nread % $block == 0) {
 			my $time = time - $time_ini;
-			warn "query $nread reads in $time seconds\n" if (defined $verbose);
+			warn "processed $nread reads in $time seconds\n" if (defined $verbose);
 		}
     }
 }
@@ -176,7 +176,7 @@ unlink "$psl";
 
 my $time_end = time;
 my $time_dif = $time_end - $time_ini;
-warn "Query $nread reads takes $time_dif seconds\n" if (defined $verbose);
+warn "Query $nread reads take $time_dif seconds\n" if (defined $verbose);
 
 # SUBROUTINES
 
