@@ -190,7 +190,7 @@ sub checkHit {
         while (<PSL>) {
 			chomp;
             my @array = split (/\t/, $_);
-            my $score = $array[0] - $array[1];
+            my $score = (2 * $array[0]) - $array[1];
             if ($score > $best) {
                 $res  = join ":", @array;
 				$best = $score;
@@ -201,6 +201,9 @@ sub checkHit {
                 $res .= join ":", @array;
 				$nhit++;
             }
+			else {
+				# do nothing
+			}
         }
         close PSL;
     }
