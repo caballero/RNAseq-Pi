@@ -133,9 +133,9 @@ unlink "$psl";
 
 sub writeFa {
     my ($id, $seq) = @_;
-    open  F, ">seq.fa" or die "cannot open seq.fa\n";
-    print F ">$id\n$seq\n";
-    close F;
+    open  FA, ">$fasta" or die "cannot open $fasta\n";
+    print FA ">$id\n$seq\n";
+    close FA;
 }
 
 sub searchHit {
