@@ -212,5 +212,6 @@ sub checkHit {
         }
         close PSL;
     }
+	warn "hit: $nhit $res\n" if (defined $verbose);
     return "$nhit\t$res";
 }
