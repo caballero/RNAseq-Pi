@@ -195,7 +195,7 @@ sub checkHit {
 			chomp;
             my @array = split (/\t/, $_);
             my $score = (2 * $array[0]) - $array[1];
-			warn "calculated score=$score (2 x $array[0] + $array[1])\n" if (defined $verbose);
+			warn "calculated score=$score (2 x $array[0] - $array[1])\n" if (defined $verbose);
             if ($score > $best) {
                 $res  = join ":", @array;
 				$best = $score;
