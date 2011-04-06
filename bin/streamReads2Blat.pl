@@ -155,6 +155,7 @@ unlink "$psl";
 
 sub writeFa {
     my ($id, $seq) = @_;
+	warn "writing $fasta\n" if (defined $verbose);
     open  FA, ">$fasta" or die "cannot open $fasta\n";
     print FA ">$id\n$seq\n";
     close FA;
@@ -162,6 +163,7 @@ sub writeFa {
 
 sub searchHit {
     my ($id, $seq) = @_;
+	warn "searching hit for $id\n" if (defined $verbose);
     my $res = "$id\t$seq\t-\t0\tNo_hit_found";
     foreach my $target (@indexes) {
         my $name = $indexes{$target}{'name'};
@@ -178,6 +180,7 @@ sub searchHit {
 sub runBlat {
     my $target = shift @_;
     my $port   = $indexes{$target}{'port'};
+	warn "runnung blat in $host $port $target\n" if (defined $verbose);
     system ("$gfclient $host $port / -nohead $fasta $psl > /dev/null");
 }
 
@@ -186,11 +189,13 @@ sub checkHit {
 	my $best = -1;
 	my $nhit = 0;
     if (-s $psl) {
+	    warn "checking hist in $psl\n" if (defined $verbose);
         open PSL, "$psl" or die "cannot open $psl\n";
         while (<PSL>) {
 			chomp;
             my @array = split (/\t/, $_);
             my $score = (2 * $array[0]) - $array[1];
+			warn "calculated score=$score (2 x $array[0] + $array[1])\n" if (defined $verbose);
             if ($score > $best) {
                 $res  = join ":", @array;
 				$best = $score;
