@@ -128,7 +128,7 @@ if ($format eq 'fq') {
         $id =~ s/\@//;
         writeFa($id, $seq);
         my $hit = searchHit($id, $seq);
-        print $hit;
+        print "$hit\n";
     }
     unlink "$fasta";
     unlink "$psl";
@@ -162,12 +162,12 @@ sub writeFa {
 
 sub searchHit {
     my ($id, $seq) = @_;
-    my $res = "$id\t$seq\tNo_hit_found";
+    my $res = "$id\t$seq\t-\t0\tNo_hit_found";
     foreach my $target (@indexes) {
         my $name = $indexes{$target}{'name'};
         runBlat($target);
         my $hit = checkHit();
-        if (defined $hit) {
+        unless ($hit =~ m/No_hit_found/) {
             $res = "$id\t$seq\t$name\t$hit";
             last;
         }
@@ -182,7 +182,7 @@ sub runBlat {
 }
 
 sub checkHit {
-    my $res  = undef;
+    my $res  = 'No_hit_found';
 	my $best = -1;
 	my $nhit = 0;
     if (-s $psl) {
