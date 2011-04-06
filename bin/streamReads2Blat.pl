@@ -20,12 +20,14 @@ OPTIONS
     -i --input         Input file*                         FILE      STDIN
 	-o --output        Output file                         FILE      STDOUT
 	-f --format        Input format                        fq/fa     fq
-	
+	-s --minscore      Minimal Blat score**                INT       100
+	-p --percent       Minimal identity percent            INT       90
 	-h --help          Print this screen
 	-v --verbose       Activate verbose mode
 	--version          Print version number
 	
-* Input file can be compressed (.gz|.bz2)
+ * Input file can be compressed (.gz|.bz2)
+** Blat score = (2 * NumMatches) - NumMismatches
 
 =head1 EXAMPLES
 
@@ -72,9 +74,11 @@ my $version   = undef;         # version call flag
 my $input     = undef;         # input file
 my $format    = 'fq';          # input format
 my $output    = undef;         # output file
-
+my $minscore  = 100;           # minimal blat score
+my $minident  = 90;            # minimal identity percent
 
 # Main variables
+my $our_version = 0.1;
 my $index_dir = '/proj/hoodlab/share/programs/blat-indexes'; # Blat indexes dir
 my $fasta     = 'read.fa';
 my $psl       = 'read.psl';
@@ -104,6 +108,8 @@ GetOptions(
     'i|input:s'        => \$input,
     'f|format:s'       => \$format,
     'o|output:s'       => \$output,
+	's|minscore:i'     => \$minscore,
+	'p|percent:i'      => \$minident,
     'version'          => \$version
     ) or pod2usage(-verbose => 2);
     
@@ -155,7 +161,7 @@ unlink "$psl";
 
 sub writeFa {
     my ($id, $seq) = @_;
-	warn "writing $fasta\n" if (defined $verbose);
+	#warn "writing $fasta\n" if (defined $verbose);
     open  FA, ">$fasta" or die "cannot open $fasta\n";
     print FA ">$id\n$seq\n";
     close FA;
@@ -163,7 +169,7 @@ sub writeFa {
 
 sub searchHit {
     my ($id, $seq) = @_;
-	warn "searching hit for $id\n" if (defined $verbose);
+	#warn "searching hit for $id\n" if (defined $verbose);
     my $res = "$id\t$seq\t-\t0\tNo_hit_found";
     foreach my $target (@indexes) {
         my $name = $indexes{$target}{'name'};
@@ -180,8 +186,8 @@ sub searchHit {
 sub runBlat {
     my $target = shift @_;
     my $port   = $indexes{$target}{'port'};
-	warn "runnung blat in $host $port $target\n" if (defined $verbose);
-    system ("$gfclient $host $port / -nohead $fasta $psl > /dev/null");
+	#warn "runnung blat in $host $port $target\n" if (defined $verbose);
+    system ("$gfclient $host $port / -nohead -minScore=$minscore -minIdentity=$minindent $fasta $psl > /dev/null");
 }
 
 sub checkHit {
@@ -189,7 +195,7 @@ sub checkHit {
 	my $best = -1;
 	my $nhit = 0;
     if (-s $psl) {
-	    warn "checking hist in $psl\n" if (defined $verbose);
+	    #warn "checking hist in $psl\n" if (defined $verbose);
         open PSL, "$psl" or die "cannot open $psl\n";
 		local $/ = "\n";
         while (<PSL>) {
@@ -203,7 +209,7 @@ sub checkHit {
 				$nhit = 1;
             }
             elsif ($score == $best) {
-                $res .= ';';
+                $res .= '|';
                 $res .= join ":", @array;
 				$nhit++;
             }
@@ -213,6 +219,11 @@ sub checkHit {
         }
         close PSL;
     }
-	warn "hit: $nhit $res\n" if (defined $verbose);
+	#warn "hit: $nhit $res\n" if (defined $verbose);
     return "$nhit\t$res";
+}
+
+sub printVersion {
+	print "$0 $our_version\n";
+	exit 1;
 }
