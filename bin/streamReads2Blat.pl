@@ -22,6 +22,7 @@ OPTIONS
 	-f --format        Input format                        fq/fa     fq
 	-s --minscore      Minimal Blat score**                INT       100
 	-p --percent       Minimal identity percent            INT       90
+	-m --maxintron     Maximal intron size                 INT       750000
 	-n --nreads        Report time every N reads           INT       1000
 	-h --help          Print this screen
 	-v --verbose       Activate verbose mode
@@ -78,6 +79,7 @@ my $output    = undef;         # output file
 my $minscore  = 100;           # minimal blat score
 my $minident  = 90;            # minimal identity percent
 my $block     = 1000;          # partial report every N reads;
+my $maxintron = 750000;        # max Intron size
 
 # Main variables
 my $our_version = 0.1;
@@ -115,6 +117,7 @@ GetOptions(
 	's|minscore:i'     => \$minscore,
 	'p|percent:i'      => \$minident,
 	'n|nreads:i'       => \$block,
+	'm|maxintron:i'    => \$maxintron,
     'version'          => \$version
     ) or pod2usage(-verbose => 2);
     
@@ -205,7 +208,7 @@ sub runBlat {
     my $target = shift @_;
     my $port   = $indexes{$target}{'port'};
 	#warn "runnung blat in $host $port $target\n" if (defined $verbose);
-    system ("$gfclient $host $port / -nohead -minScore=$minscore -minIdentity=$minident $fasta $psl > /dev/null");
+    system ("$gfclient $host $port / -nohead -minScore=$minscore -minIdentity=$minident -maxIntron=$maxintron $fasta $psl > /dev/null");
 }
 
 sub checkHit {
