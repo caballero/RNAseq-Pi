@@ -125,7 +125,7 @@ while (<>) {
         print U $_;
     }
     else {
-        if (m/NM:i:(\d+)/) {
+        if (m/IH:i:(\d+)/) {
             my $hits = $1;
             if ($hits == 0) {
                 $num_uniq++;
