@@ -22,6 +22,7 @@ OPTIONS
 	-f --format        Input format                        fq/fa     fq
 	-s --minscore      Minimal Blat score**                INT       100
 	-p --percent       Minimal identity percent            INT       90
+	-n --nreads        Report time every N reads           INT       1000
 	-h --help          Print this screen
 	-v --verbose       Activate verbose mode
 	--version          Print version number
@@ -33,7 +34,7 @@ OPTIONS
 
 perl streamReads2Blat.pl -i reads.fq.gz -o align.out
 
-perl streamReads2Blat.pl -i reads.fa -f fa -o align.out
+perl streamReads2Blat.pl -i reads.fa -f fa -o align.out -s 50 -p 95 -n 10000
 
 perl streamReads2Blat.pl < reads.fq > align.out
 
@@ -76,10 +77,12 @@ my $format    = 'fq';          # input format
 my $output    = undef;         # output file
 my $minscore  = 100;           # minimal blat score
 my $minident  = 90;            # minimal identity percent
+my $block     = 1000;          # partial report every N reads;
 
 # Main variables
 my $our_version = 0.1;
 my $time_ini    = time;
+my $nread       = 0;
 my $index_dir   = '/proj/hoodlab/share/programs/blat-indexes'; # Blat indexes dir
 my $fasta       = 'read.fa';
 my $psl         = 'read.psl';
@@ -111,6 +114,7 @@ GetOptions(
     'o|output:s'       => \$output,
 	's|minscore:i'     => \$minscore,
 	'p|percent:i'      => \$minident,
+	'n|nreads:i'       => \$block,
     'version'          => \$version
     ) or pod2usage(-verbose => 2);
     
@@ -131,11 +135,16 @@ if (defined $output) {
 if ($format eq 'fq') {
     $/ = "\n\@";
     while (<>) {
+		$nread++;
         my ($id, $seq, $sep, $qual) = split (/\n/, $_);
         $id =~ s/\@//;
         writeFa($id, $seq);
         my $hit = searchHit($id, $seq);
         print "$hit\n";
+		if ($nread % $block == 0) {
+			my $time = time - $time_ini;
+			warn "query $nread reads in $time seconds\n" if (defined $verbose);
+		}
     }
     unlink "$fasta";
     unlink "$psl";
@@ -143,11 +152,16 @@ if ($format eq 'fq') {
 elsif ($format eq 'fa') {
     $/ = "\n>";
     while (<>) {
+		$nread++;
         my ($id, $seq) = split (/\n/, $_);
         $id =~ s/>//;
         writeFa($id, $seq);
         my $hit = searchHit($id, $seq);
         print "$hit\n"; 
+		if ($nread % $block == 0) {
+			my $time = time - $time_ini;
+			warn "query $nread reads in $time seconds\n" if (defined $verbose);
+		}
     }
 }
 else {
@@ -159,7 +173,7 @@ unlink "$psl";
 
 my $time_end = time;
 my $time_dif = $time_end - $time_ini;
-warn "Query takes $time_dif seconds\n" if (defined $verbose);
+warn "Query $nread reads takes $time_dif seconds\n" if (defined $verbose);
 
 # SUBROUTINES
 
