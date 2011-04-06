@@ -187,7 +187,7 @@ sub runBlat {
     my $target = shift @_;
     my $port   = $indexes{$target}{'port'};
 	#warn "runnung blat in $host $port $target\n" if (defined $verbose);
-    system ("$gfclient $host $port / -nohead -minScore=$minscore -minIdentity=$minindent $fasta $psl > /dev/null");
+    system ("$gfclient $host $port / -nohead -minScore=$minscore -minIdentity=$minident $fasta $psl > /dev/null");
 }
 
 sub checkHit {
