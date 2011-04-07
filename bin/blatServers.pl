@@ -97,10 +97,8 @@ printVersion() if(defined $version);
 if (defined $start) {
     foreach my $idx (keys %indexes) {
         my $port = $indexes{$idx};
-        my $log  = $idx;
-        $log =~ s/2bit/log/;
-		warn "launching server for $idx using host=$host, port=$port, log=$log\n" if (defined $verbose);
-        system ("$gfserver start $host $port $param -log=$log $index_dir/$idx &");
+        warn "launching server for $idx using host=$host, port=$port\n" if (defined $verbose);
+        system ("$gfserver start $host $port $param $index_dir/$idx &");
     }
 }
 else {
