@@ -185,7 +185,7 @@ sub searchHit {
     my $res = "$id\t$seq\t-\t0\tNo_hit_found";
     foreach my $target (@indexes) {
         my $name = $indexes{$target}{'name'};
-        my $hit = runBlat($target, ">$id\n$fa\n");
+        my $hit = runBlat($target, ">$id\n$seq\n");
         unless ($hit =~ m/No_hit_found/) {
             $res = "$id\t$seq\t$name\t$hit";
             last;
