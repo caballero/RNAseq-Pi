@@ -105,7 +105,7 @@ if (defined $start) {
 }
 else {
     foreach my $idx (keys %indexes) {
-        my $port = $indexes{$idx}{'port'};
+        my $port = $indexes{$idx};
 		warn "stoping server for $idx in host=$host, port=$port\n" if (defined $verbose);
         system ("$gfserver stop $host $port");
     }

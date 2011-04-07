@@ -96,16 +96,16 @@ my @indexes     = ( 'solexa_primers.2bit',
                     'ERCC_reference_081215.2bit',
                     'hs37.61.2bit'                     );
 my %indexes     = ();
-$indexes{'solexa_primers.2bit'}{'name'}          = 'primer match';
-$indexes{'solexa_primers.2bit'}{'port'}          = 1111;
-$indexes{'human.GRCh37.61.rRNA-MT.2bit'}{'name'} = 'rRNA/MT match';
-$indexes{'human.GRCh37.61.rRNA-MT.2bit'}{'port'} = 1112;
-$indexes{'human_RepBase15.10.2bit'}{'name'}      = 'repeat match';
-$indexes{'human_RepBase15.10.2bit'}{'port'}      = 1113;
-$indexes{'ERCC_reference_081215.2bit'}{'name'}   = 'ERCC macth';
-$indexes{'ERCC_reference_081215.2bit'}{'port'}   = 1114;
+#$indexes{'solexa_primers.2bit'}{'name'}          = 'primer match';
+#$indexes{'solexa_primers.2bit'}{'port'}          = 1111;
+#$indexes{'human.GRCh37.61.rRNA-MT.2bit'}{'name'} = 'rRNA/MT match';
+#$indexes{'human.GRCh37.61.rRNA-MT.2bit'}{'port'} = 1112;
+#$indexes{'human_RepBase15.10.2bit'}{'name'}      = 'repeat match';
+#$indexes{'human_RepBase15.10.2bit'}{'port'}      = 1113;
+#$indexes{'ERCC_reference_081215.2bit'}{'name'}   = 'ERCC macth';
+#$indexes{'ERCC_reference_081215.2bit'}{'port'}   = 1114;
 $indexes{'hs37.61.2bit'}{'name'}                 = 'hg19 match';
-$indexes{'hs37.61.2bit'}{'port'}                 = 1115;
+$indexes{'hs37.61.2bit'}{'port'}                 = 1111;
 
 # Calling options
 GetOptions(
@@ -141,7 +141,7 @@ if ($format eq 'fq') {
 		$nread++;
         my ($id, $seq, $sep, $qual) = split (/\n/, $_);
         $id =~ s/\@//;
-        writeFa($id, $seq);
+        #writeFa($id, $seq);
         my $hit = searchHit($id, $seq);
         print "$hit\n";
 		if ($nread % $block == 0) {
@@ -149,8 +149,8 @@ if ($format eq 'fq') {
 			warn "query $nread reads in $time seconds\n" if (defined $verbose);
 		}
     }
-    unlink "$fasta";
-    unlink "$psl";
+    #unlink "$fasta";
+    #unlink "$psl";
 }
 elsif ($format eq 'fa') {
     $/ = "\n>";
@@ -158,7 +158,7 @@ elsif ($format eq 'fa') {
 		$nread++;
         my ($id, $seq) = split (/\n/, $_);
         $id =~ s/>//;
-        writeFa($id, $seq);
+        #writeFa($id, $seq);
         my $hit = searchHit($id, $seq);
         print "$hit\n"; 
 		if ($nread % $block == 0) {
@@ -171,8 +171,8 @@ else {
     die "Format $format is not FASTQ/FASTA\n";
 }
 
-unlink "$fasta";
-unlink "$psl";
+#unlink "$fasta";
+#unlink "$psl";
 
 my $time_end = time;
 my $time_dif = $time_end - $time_ini;
@@ -180,22 +180,12 @@ warn "Query $nread reads take $time_dif seconds\n" if (defined $verbose);
 
 # SUBROUTINES
 
-sub writeFa {
-    my ($id, $seq) = @_;
-	#warn "writing $fasta\n" if (defined $verbose);
-    open  FA, ">$fasta" or die "cannot open $fasta\n";
-    print FA ">$id\n$seq\n";
-    close FA;
-}
-
 sub searchHit {
     my ($id, $seq) = @_;
-	#warn "searching hit for $id\n" if (defined $verbose);
     my $res = "$id\t$seq\t-\t0\tNo_hit_found";
     foreach my $target (@indexes) {
         my $name = $indexes{$target}{'name'};
-        runBlat($target);
-        my $hit = checkHit();
+        my $hit = runBlat($target, ">$id\n$fa\n");
         unless ($hit =~ m/No_hit_found/) {
             $res = "$id\t$seq\t$name\t$hit";
             last;
@@ -205,43 +195,35 @@ sub searchHit {
 }
 
 sub runBlat {
-    my $target = shift @_;
-    my $port   = $indexes{$target}{'port'};
-	#warn "runnung blat in $host $port $target\n" if (defined $verbose);
-    system ("$gfclient $host $port / -nohead -minScore=$minscore -minIdentity=$minident -maxIntron=$maxintron $fasta $psl > /dev/null");
-}
-
-sub checkHit {
-    my $res  = 'No_hit_found';
-	my $best = -1;
-	my $nhit = 0;
-    if (-s $psl) {
-	    #warn "checking hist in $psl\n" if (defined $verbose);
-        open PSL, "$psl" or die "cannot open $psl\n";
-		local $/ = "\n";
-        while (<PSL>) {
-			chomp;
-            my @array = split (/\t/, $_);
-            my $score = (2 * $array[0]) - $array[1];
-			#warn "calculated score=$score (2 x $array[0] - $array[1])\n" if (defined $verbose);
-            if ($score > $best) {
-                $res  = join ":", @array;
-				$best = $score;
-				$nhit = 1;
-            }
-            elsif ($score == $best) {
-                $res .= '|';
-                $res .= join ":", @array;
-				$nhit++;
-            }
-			else {
-				# do nothing
-			}
+    my ($target, $fa) = @_;
+    my $port     = $indexes{$target}{'port'};
+    my $res      = `echo $fa | $gfclient $host $port / -nohead -minScore=$minscore -minIdentity=$minident -maxIntron=$maxintron stdin stdout > /dev/null`;
+    my @hits     = split (/\n/, $res);
+    my $best_hit = 'No_hit_found';
+	my $best     = -1;
+	my $nhit     = 0;
+	# Filter hits, keep the best
+    foreach my $hit (@hits) {
+        next unless ($hit =~ m/\d+/);
+	    chomp $hit;
+        my @array = split (/\t/, $hit);
+        # Score = (2 * Matches) - Mismatches - QueryGaps - TargetGaps
+        my $score = (2 * $array[0]) - $array[1] - $array[4] - $array[6];
+		if ($score > $best) {
+            $best_hit  = join ":", @array;
+            $best = $score;
+			$nhit = 1;
         }
-        close PSL;
+        elsif ($score == $best) {
+            $best_hit .= '|';
+            $best_hit .= join ":", @array;
+			$nhit++;
+        }
+		else {
+			# do nothing
+		}
     }
-	#warn "hit: $nhit $res\n" if (defined $verbose);
-    return "$nhit\t$res";
+    return "$nhit\t$best_hit";
 }
 
 sub printVersion {
