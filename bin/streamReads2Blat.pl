@@ -96,16 +96,16 @@ my @indexes     = ( 'solexa_primers.2bit',
                     'ERCC_reference_081215.2bit',
                     'hs37.61.2bit'                     );
 my %indexes     = ();
-#$indexes{'solexa_primers.2bit'}{'name'}          = 'primer match';
-#$indexes{'solexa_primers.2bit'}{'port'}          = 1111;
-#$indexes{'human.GRCh37.61.rRNA-MT.2bit'}{'name'} = 'rRNA/MT match';
-#$indexes{'human.GRCh37.61.rRNA-MT.2bit'}{'port'} = 1112;
-#$indexes{'human_RepBase15.10.2bit'}{'name'}      = 'repeat match';
-#$indexes{'human_RepBase15.10.2bit'}{'port'}      = 1113;
-#$indexes{'ERCC_reference_081215.2bit'}{'name'}   = 'ERCC macth';
-#$indexes{'ERCC_reference_081215.2bit'}{'port'}   = 1114;
+$indexes{'solexa_primers.2bit'}{'name'}          = 'primer match';
+$indexes{'solexa_primers.2bit'}{'port'}          = 1111;
+$indexes{'human.GRCh37.61.rRNA-MT.2bit'}{'name'} = 'rRNA/MT match';
+$indexes{'human.GRCh37.61.rRNA-MT.2bit'}{'port'} = 1112;
+$indexes{'human_RepBase15.10.2bit'}{'name'}      = 'repeat match';
+$indexes{'human_RepBase15.10.2bit'}{'port'}      = 1113;
+$indexes{'ERCC_reference_081215.2bit'}{'name'}   = 'ERCC macth';
+$indexes{'ERCC_reference_081215.2bit'}{'port'}   = 1114;
 $indexes{'hs37.61.2bit'}{'name'}                 = 'hg19 match';
-$indexes{'hs37.61.2bit'}{'port'}                 = 1111;
+$indexes{'hs37.61.2bit'}{'port'}                 = 1115;
 
 # Calling options
 GetOptions(
@@ -170,9 +170,6 @@ elsif ($format eq 'fa') {
 else {
     die "Format $format is not FASTQ/FASTA\n";
 }
-
-#unlink "$fasta";
-#unlink "$psl";
 
 my $time_end = time;
 my $time_dif = $time_end - $time_ini;
