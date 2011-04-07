@@ -197,7 +197,13 @@ sub searchHit {
 sub runBlat {
     my ($target, $fa) = @_;
     my $port     = $indexes{$target}{'port'};
-    print "echo \"$fa\" | $gfclient $host $port / -nohead -minScore=$minscore -minIdentity=$minident -maxIntron=$maxintron stdin stdout\n";
+    print "FASTA=$fa\n";
+    print "gfClient=$gfclient\n";
+    print "HOST=$host\n";
+    print "PORT=$port\n";
+    print "minScore=$minscore\n";
+    print "minIdentity=$minident\n";
+    print "maxIntron=$maxintron\n";
     exit 1;
     my $res      = `echo \"$fa\" | $gfclient $host $port / -nohead -minScore=$minscore -minIdentity=$minident -maxIntron=$maxintron stdin stdout`;
     my @hits     = split (/\n/, $res);
