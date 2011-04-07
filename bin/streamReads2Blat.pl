@@ -197,7 +197,7 @@ sub searchHit {
 sub runBlat {
     my ($target, $fa) = @_;
     my $port     = $indexes{$target}{'port'};
-    my $res      = `echo $fa | $gfclient $host $port / -nohead -minScore=$minscore -minIdentity=$minident -maxIntron=$maxintron stdin stdout > /dev/null`;
+    my $res      = `echo "$fa" | $gfclient $host $port / -nohead -minScore=$minscore -minIdentity=$minident -maxIntron=$maxintron stdin stdout > /dev/null`;
     my @hits     = split (/\n/, $res);
     my $best_hit = 'No_hit_found';
 	my $best     = -1;
