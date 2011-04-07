@@ -198,6 +198,7 @@ sub runBlat {
     my ($target, $fa) = @_;
     my $port     = $indexes{$target}{'port'};
     print "echo \"$fa\" | $gfclient $host $port / -nohead -minScore=$minscore -minIdentity=$minident -maxIntron=$maxintron stdin stdout\n";
+    exit 1;
     my $res      = `echo \"$fa\" | $gfclient $host $port / -nohead -minScore=$minscore -minIdentity=$minident -maxIntron=$maxintron stdin stdout`;
     my @hits     = split (/\n/, $res);
     my $best_hit = 'No_hit_found';
