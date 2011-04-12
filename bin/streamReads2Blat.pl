@@ -29,7 +29,7 @@ OPTIONS
 	--version          Print version number
 	
  * Input file can be compressed (.gz|.bz2)
-** Blat score = (2 * NumMatches) - NumMismatches
+** Blat score = (2 * NumMatches) - NumMismatches - NumGaps
 
 =head1 EXAMPLES
 
