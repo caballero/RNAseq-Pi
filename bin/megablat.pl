@@ -24,6 +24,7 @@ OPTIONS
 	-n --nreads        Report time every N reads         INT        1000
 	-t --threads       Create N process                  INT        2
 
+	-e --execdir       Directory with the exec           PATH       
 	-s --score         Minimal Blat score [3]            INT        100
 	-p --percent       Minimal identity percent          INT        90
 	-m --maxintron     Maximal intron size               INT        750000
@@ -90,32 +91,13 @@ my $maxintron = 750000;        # max Intron size
 my $threads   = 1;             # number of process to run
 my $host      = 'localhost';   # local host name
 my $port      = 1111;          # local port number
+my $exec      = '/proj/hoodlab/share/programs/blat';
+my $allhits   = undef;         # keep all hits flag
 
 # Main variables
 my $our_version = 0.1;
 my $time_ini    = time;
 my $nread       = 0;
-my $index_dir   = '/proj/hoodlab/share/programs/blat-indexes'; # Blat indexes dir
-my $fasta       = 'read.fa';
-my $psl         = 'read.psl';
-my $gfclient    = '/proj/hoodlab/share/programs/blat/gfClient';
-my $host        = 'localhost';
-my @indexes     = ( 'solexa_primers.2bit',
-                    'human.GRCh37.61.rRNA-MT.2bit',
-                    'human_RepBase15.10.2bit',
-                    'ERCC_reference_081215.2bit',
-                    'hs37.61.2bit'                     );
-my %indexes     = ();
-$indexes{'solexa_primers.2bit'}{'name'}          = 'primer match';
-$indexes{'solexa_primers.2bit'}{'port'}          = 1111;
-$indexes{'human.GRCh37.61.rRNA-MT.2bit'}{'name'} = 'rRNA/MT match';
-$indexes{'human.GRCh37.61.rRNA-MT.2bit'}{'port'} = 1112;
-$indexes{'human_RepBase15.10.2bit'}{'name'}      = 'repeat match';
-$indexes{'human_RepBase15.10.2bit'}{'port'}      = 1113;
-$indexes{'ERCC_reference_081215.2bit'}{'name'}   = 'ERCC macth';
-$indexes{'ERCC_reference_081215.2bit'}{'port'}   = 1114;
-$indexes{'hs37.61.2bit'}{'name'}                 = 'hg19 match';
-$indexes{'hs37.61.2bit'}{'port'}                 = 1115;
 
 # Calling options
 GetOptions(
@@ -128,11 +110,16 @@ GetOptions(
 	'p|percent:i'      => \$minident,
 	'n|nreads:i'       => \$block,
 	'm|maxintron:i'    => \$maxintron,
+	'r|reference:s'    => \$reference,
     'version'          => \$version
     ) or pod2usage(-verbose => 2);
     
 pod2usage(-verbose => 2) if (defined $help);
 printVersion() if(defined $version);
+
+my $gfclient    = "$exec/gfClient";
+my $gfserver    = "$exec/gfServer";
+
 
 # Opening files (if required)
 if (defined $input) {
