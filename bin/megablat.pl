@@ -139,7 +139,7 @@ if ($format eq 'fq') {
         my ($id, $seq, $sep, $qual) = split (/\n/, $_);
         $id =~ s/\@//;
         my $hit = runBlat(">$id\n$seq\n");
-        print "$hit\n";
+        print "$id\t$seq\t$hit\n";
 		if ($nread % $block == 0) {
 			my $time = time - $time_ini;
 			warn "query $nread reads in $time seconds\n" if (defined $verbose);
@@ -153,7 +153,7 @@ elsif ($format eq 'fa') {
         my ($id, $seq) = split (/\n/, $_);
         $id =~ s/>//;
         my $hit = runBlat(">$id\n$seq\n");
-        print "$hit\n"; 
+        print "$id\t$seq\t$hit\n"; 
 		if ($nread % $block == 0) {
 			my $time = time - $time_ini;
 			warn "processed $nread reads in $time seconds\n" if (defined $verbose);
