@@ -138,16 +138,13 @@ if ($format eq 'fq') {
 		$nread++;
         my ($id, $seq, $sep, $qual) = split (/\n/, $_);
         $id =~ s/\@//;
-        #writeFa($id, $seq);
-        my $hit = searchHit($id, $seq);
+        my $hit = runBlat(">$id\n$seq\n");
         print "$hit\n";
 		if ($nread % $block == 0) {
 			my $time = time - $time_ini;
 			warn "query $nread reads in $time seconds\n" if (defined $verbose);
 		}
     }
-    #unlink "$fasta";
-    #unlink "$psl";
 }
 elsif ($format eq 'fa') {
     $/ = "\n>";
@@ -155,8 +152,7 @@ elsif ($format eq 'fa') {
 		$nread++;
         my ($id, $seq) = split (/\n/, $_);
         $id =~ s/>//;
-        #writeFa($id, $seq);
-        my $hit = searchHit($id, $seq);
+        my $hit = runBlat(">$id\n$seq\n");
         print "$hit\n"; 
 		if ($nread % $block == 0) {
 			my $time = time - $time_ini;
@@ -174,24 +170,9 @@ warn "Query $nread reads take $time_dif seconds\n" if (defined $verbose);
 
 # SUBROUTINES
 
-sub searchHit {
-    my ($id, $seq) = @_;
-    my $res = "$id\t$seq\t-\t0\tNo_hit_found";
-    foreach my $target (@indexes) {
-        my $name = $indexes{$target}{'name'};
-        my $hit = runBlat($target, ">$id\n$seq\n");
-        unless ($hit =~ m/No_hit_found/) {
-            $res = "$id\t$seq\t$name\t$hit";
-            last;
-        }
-    }
-    return $res;
-}
-
 sub runBlat {
-    my ($target, $fa) = @_;
-    my $port     = $indexes{$target}{'port'};
-    my $res      = `echo \"$fa\" | $gfclient $host $port / -nohead -minScore=$minscore -minIdentity=$minident -maxIntron=$maxintron stdin stdout`;
+    my $fa       = shift @_;
+    my $res      = `echo \"$fa\" | $gfclient $host $port / -nohead -out=pslx -minScore=$minscore -minIdentity=$minident -maxIntron=$maxintron stdin stdout`;
     my @hits     = split (/\n/, $res);
     my $best_hit = 'No_hit_found';
 	my $best     = -1;
