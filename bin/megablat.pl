@@ -16,7 +16,7 @@ perl megablat.pl [OPTIONS]
 
 OPTIONS
     Parameters         Description                       Value      Default
-        -i --input         Input file  [1]                   FILE       STDIN
+    -i --input         Input file  [1]                   FILE       STDIN
     -o --output        Output file [2]                   FILE       STDOUT
     -r --reference     Align to this reference           PATH/FILE
     -f --format        Input format                      fq/fa      fq
@@ -108,7 +108,7 @@ GetOptions(
     'm|maxintron:i'    => \$maxintron,
     'x|port:i'         => \$port,
     'y|host:s'         => \$host,
-    'e|execdir:s'      => \$execdir,
+    'e|execdir:s'      => \$exec,
     'a|allhits'        => \$allhits,
     'version'          => \$version
     ) or pod2usage(-verbose => 2);
@@ -181,6 +181,14 @@ sub runBlat {
     my $best_hit = 'No_hit_found';
     my $best     = -1;
     my $nhit     = 0;
+    
+    if (defined $allhits) {
+	if (defined $hits[0]) { 
+            $nhit = $#hits + 1;
+	    $best_hit = join "|", @hits;
+        }
+	return "$nhit\t$best_hit";
+    }
     # Filter hits, keep the best
     foreach my $hit (@hits) {
         next unless ($hit =~ m/\d+/);
