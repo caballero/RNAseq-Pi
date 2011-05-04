@@ -18,7 +18,6 @@ OPTIONS
     Parameters         Description                       Value      Default
     -i --input         Input file  [1]                   FILE       STDIN
     -o --output        Output file [2]                   FILE       STDOUT
-    -r --reference     Align to this reference           PATH/FILE
     -f --format        Input format                      fq/fa      fq
     -n --nreads        Report time every N reads         INT        1000
     -e --execdir       Directory with the exec           PATH       
@@ -41,7 +40,7 @@ OPTIONS
 
 perl megablat.pl -i reads.fq.gz -o align.out
 
-perl megablat.pl -i reads.fa -f fa -o align.out -s 50 -p 95 -n 10000 -t 6
+perl megablat.pl -i reads.fa -f fa -o align.out -s 50 -p 95 -n 10000
 
 =head1 AUTHOR
 
@@ -183,11 +182,11 @@ sub runBlat {
     my $nhit     = 0;
     
     if (defined $allhits) {
-	if (defined $hits[0]) { 
+        if (defined $hits[0]) { 
             $nhit = $#hits + 1;
-	    $best_hit = join "|", @hits;
+	        $best_hit = join "|", @hits;
         }
-	return "$nhit\t$best_hit";
+	    return "$nhit\t$best_hit";
     }
     # Filter hits, keep the best
     foreach my $hit (@hits) {
