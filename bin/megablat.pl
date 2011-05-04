@@ -7,9 +7,8 @@ megablat.pl
 =head1 DESCRIPTION
 
 Align zillions of short reads to a reference using Blat.
-This script will create the Blat server required (gcServer) and process all 
-the sequences (gfClient) in a file using N-threats doing some post-processing
-of each output.
+This script will process all the sequences (gfClient) in a file post-
+processing of each output.
 
 =head1 USAGE
 
@@ -17,25 +16,23 @@ perl megablat.pl [OPTIONS]
 
 OPTIONS
     Parameters         Description                       Value      Default
-    -i --input         Input file  [1]                   FILE       STDIN
-	-o --output        Output file [2]                   FILE       STDOUT
-	-r --reference     Align to this reference           PATH/FILE
-	-f --format        Input format                      fq/fa      fq
-	-n --nreads        Report time every N reads         INT        1000
-	-t --threads       Create N process                  INT        2
+        -i --input         Input file  [1]                   FILE       STDIN
+    -o --output        Output file [2]                   FILE       STDOUT
+    -r --reference     Align to this reference           PATH/FILE
+    -f --format        Input format                      fq/fa      fq
+    -n --nreads        Report time every N reads         INT        1000
+    -e --execdir       Directory with the exec           PATH       
+    -s --score         Minimal Blat score [3]            INT        100
+    -p --percent       Minimal identity percent          INT        90
+    -m --maxintron     Maximal intron size               INT        750000
+    -a --allhits       Keep all hits (no filter step) 
+    -x --port          Use this port                     INT        1111
+    -y --host          Use this host name                NAME       localhost
 
-	-e --execdir       Directory with the exec           PATH       
-	-s --score         Minimal Blat score [3]            INT        100
-	-p --percent       Minimal identity percent          INT        90
-	-m --maxintron     Maximal intron size               INT        750000
-	-a --allhits       Keep all hits (no filter step) 
-	-x --port          Use this port                     INT        1111
-	-y --host          Use this host name                NAME       localhost
-
-	-h --help          Print this screen
-	-v --verbose       Activate verbose mode
-	   --version       Print version number
-	
+    -h --help          Print this screen
+    -v --verbose       Activate verbose mode
+       --version       Print version number
+    
 [1] Input file can be compressed (.gz|.bz2)
 [2] Output is a PSLX format file
 [3] Blat score = (2 * NumMatches) - NumMismatches - NumGaps 
@@ -83,12 +80,10 @@ my $version   = undef;         # version call flag
 my $input     = undef;         # input file
 my $format    = 'fq';          # input format
 my $output    = undef;         # output file
-my $reference = undef;         # reference sequence
 my $minscore  = 100;           # minimal blat score
 my $minident  = 90;            # minimal identity percent
 my $block     = 1000;          # partial report every N reads;
 my $maxintron = 750000;        # max Intron size
-my $threads   = 1;             # number of process to run
 my $host      = 'localhost';   # local host name
 my $port      = 1111;          # local port number
 my $exec      = '/proj/hoodlab/share/programs/blat';
@@ -98,6 +93,7 @@ my $allhits   = undef;         # keep all hits flag
 my $our_version = 0.1;
 my $time_ini    = time;
 my $nread       = 0;
+my $out         = undef;
 
 # Calling options
 GetOptions(
@@ -106,11 +102,14 @@ GetOptions(
     'i|input:s'        => \$input,
     'f|format:s'       => \$format,
     'o|output:s'       => \$output,
-	's|minscore:i'     => \$minscore,
-	'p|percent:i'      => \$minident,
-	'n|nreads:i'       => \$block,
-	'm|maxintron:i'    => \$maxintron,
-	'r|reference:s'    => \$reference,
+    's|minscore:i'     => \$minscore,
+    'p|percent:i'      => \$minident,
+    'n|nreads:i'       => \$block,
+    'm|maxintron:i'    => \$maxintron,
+    'x|port:i'         => \$port,
+    'y|host:s'         => \$host,
+    'e|execdir:s'      => \$execdir,
+    'a|allhits'        => \$allhits,
     'version'          => \$version
     ) or pod2usage(-verbose => 2);
     
@@ -135,35 +134,40 @@ if (defined $output) {
 if ($format eq 'fq') {
     $/ = "\n\@";
     while (<>) {
-		$nread++;
+        $nread++;
         my ($id, $seq, $sep, $qual) = split (/\n/, $_);
-        $id =~ s/\@//;
+        $id     =~ s/\@//;
         my $hit = runBlat(">$id\n$seq\n");
-        print "$id\t$seq\t$hit\n";
-		if ($nread % $block == 0) {
-			my $time = time - $time_ini;
-			warn "query $nread reads in $time seconds\n" if (defined $verbose);
-		}
+        $out   .= "$id\t$seq\t$hit\n";
+        if ($nread % $block == 0) {
+            print $out;
+            $out     = '';
+            my $time = time - $time_ini;
+            warn "query $nread reads in $time seconds\n" if (defined $verbose);
+        }
     }
 }
 elsif ($format eq 'fa') {
     $/ = "\n>";
     while (<>) {
-		$nread++;
+        $nread++;
         my ($id, $seq) = split (/\n/, $_);
         $id =~ s/>//;
         my $hit = runBlat(">$id\n$seq\n");
-        print "$id\t$seq\t$hit\n"; 
-		if ($nread % $block == 0) {
-			my $time = time - $time_ini;
-			warn "processed $nread reads in $time seconds\n" if (defined $verbose);
-		}
+        $out   .= "$id\t$seq\t$hit\n";
+        if ($nread % $block == 0) {
+            print $out;
+            $out     = '';
+            my $time = time - $time_ini;
+            warn "processed $nread reads in $time seconds\n" if (defined $verbose);
+        }
     }
 }
 else {
     die "Format $format is not FASTQ/FASTA\n";
 }
 
+print $out;
 my $time_end = time;
 my $time_dif = $time_end - $time_ini;
 warn "Query $nread reads take $time_dif seconds\n" if (defined $verbose);
@@ -175,33 +179,33 @@ sub runBlat {
     my $res      = `echo \"$fa\" | $gfclient $host $port / -nohead -out=pslx -minScore=$minscore -minIdentity=$minident -maxIntron=$maxintron stdin stdout`;
     my @hits     = split (/\n/, $res);
     my $best_hit = 'No_hit_found';
-	my $best     = -1;
-	my $nhit     = 0;
-	# Filter hits, keep the best
+    my $best     = -1;
+    my $nhit     = 0;
+    # Filter hits, keep the best
     foreach my $hit (@hits) {
         next unless ($hit =~ m/\d+/);
-	    chomp $hit;
+        chomp $hit;
         my @array = split (/\t/, $hit);
         # Score = (2 * Matches) - Mismatches - QueryGaps - TargetGaps
         my $score = (2 * $array[0]) - $array[1] - $array[4] - $array[6];
-		if ($score > $best) {
+        if ($score > $best) {
             $best_hit  = join ":", @array;
             $best = $score;
-			$nhit = 1;
+            $nhit = 1;
         }
         elsif ($score == $best) {
             $best_hit .= '|';
             $best_hit .= join ":", @array;
-			$nhit++;
+            $nhit++;
         }
-		else {
-			# do nothing
-		}
+        else {
+            # do nothing
+        }
     }
     return "$nhit\t$best_hit";
 }
 
 sub printVersion {
-	print "$0 $our_version\n";
-	exit 1;
+    print "$0 $our_version\n";
+    exit 1;
 }
