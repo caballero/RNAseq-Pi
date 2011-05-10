@@ -106,7 +106,7 @@ while (<>) {
         printUnmap(\$sid, \$seq, \$nhits) if (defined $unmap);
     }
     if ($hits =~ m/_hap/) {
-         filterHap(\$nhit, \$hits);
+        filterHap(\$nhit, \$hits);
     }
 
     if ($nhits > $maxhits) {
