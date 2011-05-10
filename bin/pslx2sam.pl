@@ -19,6 +19,9 @@ OPTIONS
     -u --unmap         Keep unmaped reads                   No
     -m --max-hits      Report up to Max hits    INT         10
     -p --poly-map      Report polymapped reads              No
+    -s --score         Quality score            Phred+64    I 
+    -q --mapq          Map quality score        Phred       255
+    
     -h --help          Print this screen
     -v --verbose       Verbose mode
     --version          Print version
@@ -63,6 +66,7 @@ my $version = 0.01;
 my $input_h;
 my ($sid, $seq, $nhit, $hits);
 my ($mat, $dir, $cig, $chr, $pos);
+my %count   = ();
 
 # Parameters initialization
 my $getversion = undef;
@@ -72,6 +76,8 @@ my $input      = undef;
 my $output     = undef;
 my $unmap      = undef;
 my $polymap    = undef;
+my $qual       = 'I';
+my $mapq       = 255;
 my $maxhits    = 10;
 
 # Fetch options
@@ -83,6 +89,8 @@ GetOptions(
     'u|unmap'         => \$unmap,
     'm|max-hits:i'    => \$maxhits,
     'p|polymap'       => \$polymap,
+    's|score:s'       => \$qual,
+    'q|mapq:i'        => \$mapq,
     'version'         => \$getversion
 );
 pod2usage(-verbose => 2) if (defined $help);
@@ -102,22 +110,31 @@ if (defined $output) {
 while (<>) {
     chomp;
     ($sid, $seq, $nhit, $hits) = split (/\t/, $_);
+    $count{'total'}++;
     if ($nhit == 0) {
         printUnmap(\$sid, \$seq, \$nhits) if (defined $unmap);
+        $count{'unmap'}++;
     }
+    
     if ($hits =~ m/_hap/) {
         filterHap(\$nhit, \$hits);
     }
 
     if ($nhits > $maxhits) {
         printUnmap(\$sid, \$seq, \$nhits) if (defined $polymap);
+        $count{'polymap'}++;
     }
     else {
         printSAM(\$sid, \$nhit, \$hits);
+        $count{'map'}++;
     }
     
 }
 
+warn "Total reads:      $count{'total'}\n" if (defined $verbose);
+warn "Unmapped reads:   $count{'unmap'}\n" if (defined $verbose);
+warn "Polymapped reads: $count{'poly'}\n"  if (defined $verbose);
+warn "Mapped reads:     $count{'map'}\n"   if (defined $verbose);
 
 #####################################################################
 #
@@ -129,4 +146,18 @@ sub printVersion {
     print "pslx2sam.pl version $version\n";
     exit 1;
 }
+
+sub printUnmap {
+    ($sid_ref, $seq_ref, $nhit_ref) = @_;
+    my $q = $qual x length $$seq_ref;
+    print join "\t", $$sid_ref,4,'*','*',$mapq,'*','*','*','*',$$seq_ref,$q,"NH:i:$$nhit_ref"; 
+    print "\n";
+}
+
+sub printSAM {
     
+}
+
+sub filterHap {
+    
+}
