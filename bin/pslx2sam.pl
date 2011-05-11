@@ -65,8 +65,9 @@ use Pod::Usage;
 my $version = 0.01;
 my $input_h;
 my ($sid, $seq, $nhit, $hits);
-my ($mat, $dir, $cig, $chr, $pos);
+my ($mat, $dir, $cig, $chr, $pos, $q, $ini, $end, $len, $hit, $dif, $aln);
 my %count   = ();
+my @hits    = ();
 
 # Parameters initialization
 my $getversion = undef;
@@ -112,7 +113,7 @@ while (<>) {
     ($sid, $seq, $nhit, $hits) = split (/\t/, $_);
     $count{'total'}++;
     if ($nhit == 0) {
-        printUnmap(\$sid, \$seq, \$nhits) if (defined $unmap);
+        printUnmap(\$sid, \$seq, \$nhit) if (defined $unmap);
         $count{'unmap'}++;
     }
     
@@ -120,12 +121,12 @@ while (<>) {
         filterHap(\$nhit, \$hits);
     }
 
-    if ($nhits > $maxhits) {
-        printUnmap(\$sid, \$seq, \$nhits) if (defined $polymap);
+    if ($nhit > $maxhits) {
+        printUnmap(\$sid, \$seq, \$nhit) if (defined $polymap);
         $count{'polymap'}++;
     }
     else {
-        printSAM(\$sid, \$nhit, \$hits);
+        printSAM(\$sid, \$seq, \$nhit, \$hits);
         $count{'map'}++;
     }
     
@@ -148,16 +149,53 @@ sub printVersion {
 }
 
 sub printUnmap {
-    ($sid_ref, $seq_ref, $nhit_ref) = @_;
-    my $q = $qual x length $$seq_ref;
-    print join "\t", $$sid_ref,4,'*','*',$mapq,'*','*','*','*',$$seq_ref,$q,"NH:i:$$nhit_ref"; 
+    my ($sid_ref, $seq_ref, $nhit_ref) = @_;
+    $q = $qual x length $$seq_ref;
+    print join "\t", $$sid_ref,4,'*',0,0,'*','*',0,0,$$seq_ref,$q,"NH:i:$$nhit_ref"; 
     print "\n";
 }
 
 sub printSAM {
-    
+    my ($sid_ref, $seq_ref, $nhit_ref, $hits_ref) = @_;
+    @hits = split (/\|/, $$hits_ref);
+    foreach $hit (@hits) {
+        my @arr = split (/:/, $hit);
+        ($arr[8] eq '-') ? $dir = 16 : $dir = 0;
+        $chr = $arr[13];
+        $pos = $arr[15] + 1; # 1-based coordinates
+        $aln = $arr[21];
+        $aln =~ s/,$//;
+        
+        if ($aln =~ m/,/) {
+            
+        }
+        else {
+           $len = $arr[10];
+           $ini = $arr[11];
+           $end = $arr[12];
+           $dif = $len - $end;
+           $cig = $ini . 'S' if ($ini > 0);
+           $cig = $end . 'M';
+           $cig = $dif . 'S' if ($dif > 0);
+        }
+        
+        $q = $qual x length $$seq;
+        print join "\t", $$sid_ref,$dir,$chr,$pos,$mapq,$cig,'*',0,0,$$seq,$q,"NH:i:$$nhit_ref"; 
+        print "\n";
+    }
 }
 
 sub filterHap {
-    
+    my ($nhit_ref, $hits_ref) = @_;
+    my $new_nhit = 0;
+    my $new_hits = '';
+    @hits = split (/\|/, $$hits_ref);
+    foreach $hit (@hits) {
+        next if ($hit =~ m/chr.+hap/);
+        $new_nhit++;
+        $new_hits .= "$hit|";
+    }
+    $new_hits =~ s/\|$//;
+    $$nhit_ref = $new_nhit;
+    $$hits_ref = $new_hits;
 }
