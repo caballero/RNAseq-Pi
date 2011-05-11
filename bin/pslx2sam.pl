@@ -65,9 +65,7 @@ use Pod::Usage;
 my $version = 0.01;
 my $input_h;
 my ($sid, $seq, $nhit, $hits);
-my ($mat, $dir, $cig, $chr, $pos, $q, $ini, $end, $len, $hit, $dif, $aln);
 my %count   = ();
-my @hits    = ();
 
 # Parameters initialization
 my $getversion = undef;
@@ -150,37 +148,77 @@ sub printVersion {
 
 sub printUnmap {
     my ($sid_ref, $seq_ref, $nhit_ref) = @_;
-    $q = $qual x length $$seq_ref;
+    my $q = $qual x length $$seq_ref;
     print join "\t", $$sid_ref,4,'*',0,0,'*','*',0,0,$$seq_ref,$q,"NH:i:$$nhit_ref"; 
     print "\n";
 }
 
 sub printSAM {
     my ($sid_ref, $seq_ref, $nhit_ref, $hits_ref) = @_;
-    @hits = split (/\|/, $$hits_ref);
+    my ($chr, $dir, $pos, $read, $q, $mis, $cig, $ctag, $blk, $hit, $ini, $end, $len, $tpos, $qpos, $dif);
+    my @blks = ();
+    my @tblk = ();
+    my @qblk = ();
+    
+    my @hits = split (/\|/, $$hits_ref);
     foreach $hit (@hits) {
         my @arr = split (/:/, $hit);
-        ($arr[8] eq '-') ? $dir = 16 : $dir = 0;
-        $chr = $arr[13];
-        $pos = $arr[15] + 1; # 1-based coordinates
-        $aln = $arr[21];
-        $aln =~ s/,$//;
-        
-        if ($aln =~ m/,/) {
-            
-        }
+        if ($arr[8] eq '-') {
+            $dir  = 16;
+            $ctag = "XS:A:-";
+            $read = revcomp($$seq_ref) if ($dir == 16);
+        }    
         else {
-           $len = $arr[10];
-           $ini = $arr[11];
-           $end = $arr[12];
-           $dif = $len - $end;
-           $cig = $ini . 'S' if ($ini > 0);
-           $cig = $end . 'M';
-           $cig = $dif . 'S' if ($dif > 0);
+            $dir  = 0;
+            $ctag = "XS:A:+";
+            $read = $$seq_ref;
+        }
+        $mis  = $arr[1];
+        $chr  = $arr[13];
+        $pos  = $arr[15] + 1; # 1-based coordinates
+        $blk  = $arr[17];
+        $len  = $arr[10];
+        $ini  = $arr[11];
+        $end  = $arr[12];
+        $cig  = '';
+        $cig .= $ini . 'S' if ($ini > 0);
+            
+        if ($blk == 1) { # single align block
+            $cig .= $end . 'M';
+        }
+        else { # complex align blocks
+            $arr[18] =~ s/,$//;
+            $arr[19] =~ s/,$//;
+            $arr[20] =~ s/,$//;
+            
+            @blks = split (/,/, $arr[18]);
+            @qblk = split (/,/, $arr[20]);
+            @tblk = split (/,/, $arr[20]);
+            $tpos = $tblk[0];
+            $qpos = $qblk[0];
+            
+            for (my $i = 0; $i <= $#blks; $i++) {
+                $cig  .= $blk . 'M';
+                $tpos += $blk;
+                $qpos += $blk;
+                if ($i > 0 and $i < $#blks) {
+                    $dif  = $tblk[$i + 1] - $tpos;
+                    if ($dif >= 1) { # splice/deletion region in target sequence
+                        $cig .= $dif . 'N';
+                    }
+                    else { # Insertion in target sequence
+                        $dif  = $qblk[$i + 1] - $qpos;
+                        $cig  = $dif . 'I';
+                    }
+                }
+            }
+            $dif  = $len - $end;
+            $cig .= $dif . 'S' if ($dif > 0);
         }
         
-        $q = $qual x length $$seq;
-        print join "\t", $$sid_ref,$dir,$chr,$pos,$mapq,$cig,'*',0,0,$$seq,$q,"NH:i:$$nhit_ref"; 
+        $q = $qual x length $seq;
+        
+        print join "\t", $$sid_ref,$dir,$chr,$pos,$mapq,$cig,'*',0,0,$read,$q,"NH:i:".$$nhit_ref,"NM:i:$mis",$ctag; 
         print "\n";
     }
 }
@@ -189,8 +227,8 @@ sub filterHap {
     my ($nhit_ref, $hits_ref) = @_;
     my $new_nhit = 0;
     my $new_hits = '';
-    @hits = split (/\|/, $$hits_ref);
-    foreach $hit (@hits) {
+    my @hits = split (/\|/, $$hits_ref);
+    foreach my $hit (@hits) {
         next if ($hit =~ m/chr.+hap/);
         $new_nhit++;
         $new_hits .= "$hit|";
@@ -198,4 +236,11 @@ sub filterHap {
     $new_hits =~ s/\|$//;
     $$nhit_ref = $new_nhit;
     $$hits_ref = $new_hits;
+}
+
+sub revcomp {
+    my $s = shift @_;
+    my $r = reverse $s;
+    $r =~ tr/ACGTacgt/TGCAtgca/;
+    return $r;
 }
