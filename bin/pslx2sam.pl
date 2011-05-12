@@ -181,17 +181,19 @@ sub printSAM {
         $len  = $arr[10];
         $ini  = $arr[11];
         $end  = $arr[12];
+        
+        $arr[18] =~ s/,$//;
+        $arr[19] =~ s/,$//;
+        $arr[20] =~ s/,$//;
+
         $cig  = '';
         $cig .= $ini . 'S' if ($ini > 0);
             
         if ($blk == 1) { # single align block
+            $end  = $arr[18];
             $cig .= $end . 'M';
         }
-        else { # complex align blocks
-            $arr[18] =~ s/,$//;
-            $arr[19] =~ s/,$//;
-            $arr[20] =~ s/,$//;
-            
+        else { # complex align blocks           
             @blks = split (/,/, $arr[18]);
             @qblk = split (/,/, $arr[20]);
             @tblk = split (/,/, $arr[20]);
@@ -213,7 +215,7 @@ sub printSAM {
                     }
                 }
             }
-            $dif  = $len - $end;
+            $dif  = $len - $end - $ini;
             $cig .= $dif . 'S' if ($dif > 0);
         }
         
