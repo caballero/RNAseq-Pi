@@ -248,6 +248,7 @@ sub printSAM {
         # reconstruct the CIGAR
         my $cod = undef;
         my $cnt = 0;
+        push @rpos, 'X';
         for (my $i = 0; $i <= $#rpos; $i++) {
             if ($i == 0) {
                 $cod = $rpos[0];
