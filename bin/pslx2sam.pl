@@ -114,7 +114,6 @@ while (<>) {
     if ($hits =~ m/_hap/) {
         filterHap(\$nhit, \$hits);
     }
-
     
     if ($nhit == 0) {
         printUnmap(\$sid, \$seq, \$nhit) if (defined $unmap);
@@ -156,10 +155,8 @@ sub printUnmap {
 
 sub printSAM {
     my ($sid_ref, $seq_ref, $nhit_ref, $hits_ref) = @_;
-    my ($chr, $dir, $pos, $read, $q, $mis, $cig, $ctag, $blk, $hit, $ini, $end, $len, $tpos, $qpos, $dif);
-    my @blks = ();
-    my @tblk = ();
-    my @qblk = ();
+    my ($chr, $dir, $pos, $read, $q, $mis, $cig, $ctag, $hit);
+
     
     my @hits = split (/\|/, $$hits_ref);
     foreach $hit (@hits) {
@@ -177,50 +174,104 @@ sub printSAM {
         $mis  = $arr[1];
         $chr  = $arr[13];
         $pos  = $arr[15] + 1; # 1-based coordinates
-        $blk  = $arr[17];
-        $len  = $arr[10];
-        $ini  = $arr[11];
-        $end  = $arr[12];
+        $cig  = '';
         
         $arr[18] =~ s/,$//;
         $arr[19] =~ s/,$//;
         $arr[20] =~ s/,$//;
-
-        $cig  = '';
-        $cig .= $ini . 'S' if ($ini > 0);
-            
-        if ($blk == 1) { # single align block
-            $end  = $arr[18];
-            $cig .= $end . 'M';
+        
+        ## BUILDING CIGAR
+        my @blks = split (/,/, $arr[18]); # block lenghts
+        my @qblk = split (/,/, $arr[19]); # query ini position in blocks
+        my @tblk = split (/,/, $arr[20]); # target ini position in blocks
+        my @rpos = split (//, $read);     # all bases slots in read 
+        my @qpos = ();
+        my @tpos = ();
+        my $tpos = 0;
+        my $qpos = 0;
+        my $dif  = 0;
+        # build alignment coordinates puzzle
+        foreach my $blk (@blks) {
+            $qpos = shift @qblk;
+            $tpos = shift @tblk;
+            for (1..$blk) {
+                $qpos[$qpos] = $qpos + 1;
+                $tpos[$qpos] = $tpos + 1;
+                $qpos++;
+                $tpos++;
+            }
         }
-        else { # complex align blocks           
-            @blks = split (/,/, $arr[18]);
-            @qblk = split (/,/, $arr[20]);
-            @tblk = split (/,/, $arr[20]);
-            $tpos = $tblk[0];
-            $qpos = $qblk[0];
-            
-            for (my $i = 0; $i <= $#blks; $i++) {
-                $cig  .= $blk . 'M';
-                $tpos += $blk;
-                $qpos += $blk;
-                if ($i > 0 and $i < $#blks) {
-                    $dif  = $tblk[$i + 1] - $tpos;
-                    if ($dif >= 1) { # splice/deletion region in target sequence
-                        $cig .= $dif . 'N';
+        # decode the arrays to obtain the CIGAR
+        for (my $i = 0; $i <= $#rpos; $i++) {
+            if (defined $qpos[$i] and defined $tpos[$i]) {
+                $rpos[$i] = 'M';
+            }
+            else {
+                $rpos[$i] = 'I';
+            }
+        }
+        # soft clip the first bases
+        for (my $i = 0; $i <= $#rpos; $i++) {
+            last unless ($rpos[$i] eq 'I');
+            $rpos[$i] = 'S';
+        }
+        # soft clip the last bases
+        for (my $i = $#rpos; $i >= 0; $i--) {
+            last unless ($rpos[$i] eq 'I');
+            $rpos[$i] = 'S';
+        }
+        # calling deletions/splices in the target  
+        $tpos = undef;
+        for (my $i = 0; $i <= $#rpos; $i++) {
+            next unless ($rpos[$i] eq 'M');
+            if (defined $tpos) {
+                $dif = $tpos[$i] - $tpos;
+                if ($dif == 1) {
+                    $tpos = $tpos[$i];
+                    next;
+                }
+                else {
+                    if ($dif < 70) { # short deletion
+                        $rpos[$i] = $dif . 'DM';
                     }
-                    else { # Insertion in target sequence
-                        $dif  = $qblk[$i + 1] - $qpos;
-                        $cig  = $dif . 'I';
+                    else {           # splice site
+                        $rpos[$i] = $dif . 'NM';
                     }
+                    $tpos = $tpos[$i];
+                    next;
                 }
             }
-            $dif  = $len - $end - $ini;
-            $cig .= $dif . 'S' if ($dif > 0);
+            else {
+                $tpos = $tpos[$i] if (defined $tpos[$i]); 
+            }
+        }
+        # reconstruct the CIGAR
+        my $cod = undef;
+        my $cnt = 0;
+        for (my $i = 0; $i <= $#rpos; $i++) {
+            if ($i == 0) {
+                $cod = $rpos[0];
+                $cnt = 1;
+            }
+            else {
+                if ($cod eq $rpos[$i]) {
+                    $cnt++;
+                }
+                elsif ($rpos[$i] =~ m/\d+[DN]M/) {
+                    $rpos[$i] =~ s/M$//;
+                    $cig .= $rpos[$i];
+                    $cnt  = 1;
+                    $cod  = 'M';
+                }
+                else {
+                    $cig .= $cnt . $cod;
+                    $cnt  = 1;
+                    $cod  = $rpos[$i];
+                }
+            }
         }
         
-        $q = $qual x length $seq;
-        
+        $q = $qual x length $read;
         print join "\t", $$sid_ref,$dir,$chr,$pos,$mapq,$cig,'*',0,0,$read,$q,"NH:i:".$$nhit_ref,"NM:i:$mis",$ctag; 
         print "\n";
     }
