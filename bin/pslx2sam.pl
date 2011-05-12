@@ -260,7 +260,7 @@ sub printSAM {
                 }
                 elsif ($rpos[$i] =~ m/\d+[DN]M/) {
                     $rpos[$i] =~ s/M$//;
-                    $cig .= $rpos[$i];
+                    $cig .= "$cnt$cod$rpos[$i]";
                     $cnt  = 1;
                     $cod  = 'M';
                 }
