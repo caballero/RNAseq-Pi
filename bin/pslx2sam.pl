@@ -110,16 +110,17 @@ while (<>) {
     chomp;
     ($sid, $seq, $nhit, $hits) = split (/\t/, $_);
     $count{'total'}++;
-    if ($nhit == 0) {
-        printUnmap(\$sid, \$seq, \$nhit) if (defined $unmap);
-        $count{'unmap'}++;
-    }
     
     if ($hits =~ m/_hap/) {
         filterHap(\$nhit, \$hits);
     }
 
-    if ($nhit > $maxhits) {
+    
+    if ($nhit == 0) {
+        printUnmap(\$sid, \$seq, \$nhit) if (defined $unmap);
+        $count{'unmap'}++;
+    }
+    elsif ($nhit > $maxhits) {
         printUnmap(\$sid, \$seq, \$nhit) if (defined $polymap);
         $count{'polymap'}++;
     }
