@@ -156,8 +156,7 @@ sub printUnmap {
 sub printSAM {
     my ($sid_ref, $seq_ref, $nhit_ref, $hits_ref) = @_;
     my ($chr, $dir, $pos, $read, $q, $mis, $cig, $ctag, $hit);
-
-    
+   
     my @hits = split (/\|/, $$hits_ref);
     foreach $hit (@hits) {
         my @arr = split (/:/, $hit);
@@ -184,7 +183,7 @@ sub printSAM {
         my @blks = split (/,/, $arr[18]); # block lenghts
         my @qblk = split (/,/, $arr[19]); # query ini position in blocks
         my @tblk = split (/,/, $arr[20]); # target ini position in blocks
-        my @rpos = split (//, $read);     # all bases slots in read 
+        my @rpos = split (//,  $read);    # all bases slots in read 
         my @qpos = ();
         my @tpos = ();
         my $tpos = 0;

@@ -24,7 +24,8 @@ OPTIONS
     -s --score         Minimal Blat score [3]            INT        100
     -p --percent       Minimal identity percent          INT        90
     -m --maxintron     Maximal intron size               INT        750000
-    -a --allhits       Keep all hits (no filter step) 
+    -r --repeat        Don't report hits more than this  INT        5
+    -a --allhits       Keep all hits (no filter step)
     -x --port          Use this port                     INT        1111
     -y --host          Use this host name                NAME       localhost
 
@@ -88,6 +89,7 @@ my $host      = 'localhost';   # local host name
 my $port      = 1111;          # local port number
 my $exec      = '/proj/hoodlab/share/programs/blat';
 my $allhits   = undef;         # keep all hits flag
+my $repeat    = 5;
 
 # Main variables
 my $our_version = 0.1;
@@ -111,6 +113,7 @@ GetOptions(
     'y|host:s'         => \$host,
     'e|execdir:s'      => \$exec,
     'a|allhits'        => \$allhits,
+    'r|repeat:i'       => \$repeat,
     'version'          => \$version
     ) or pod2usage(-verbose => 2);
     
@@ -118,8 +121,6 @@ pod2usage(-verbose => 2) if (defined $help);
 printVersion() if(defined $version);
 
 my $gfclient    = "$exec/gfClient";
-my $gfserver    = "$exec/gfServer";
-
 
 # Opening files (if required)
 if (defined $input) {
@@ -129,7 +130,7 @@ if (defined $input) {
 }
 if (defined $output) {
 	if (-e $output) { # simple crash recovery mode
-		open F, "$output" or die "ouput file exits, but I cannot check it\n";
+		open F, "$output" or die "output file exits, but I cannot check it\n";
 		while (<F>) { 
 			$recover++; 
 		}
@@ -152,9 +153,10 @@ if ($format eq 'fq') {
 		}
 		
         my ($id, $seq, $sep, $qual) = split (/\n/, $_);
-        $id     =~ s/\@//;
-        my $hit = runBlat(">$id\n$seq\n");
-        $out   .= "$id\t$seq\t$hit\n";
+        $id   =~ s/\@//;
+        my ($nhit, $hit) = runBlat(">$id\n$seq\n");
+        $hit  = '-' if ($nhit >= $repeat);
+        $out .= "$id\t$seq\t$nhit\t$hit\n";
         if ($nread % $block == 0) {
             print $out;
             $out     = '';
@@ -173,9 +175,10 @@ elsif ($format eq 'fa') {
 		}
 		
 		my ($id, $seq) = split (/\n/, $_);
-        $id =~ s/>//;
-        my $hit = runBlat(">$id\n$seq\n");
-        $out   .= "$id\t$seq\t$hit\n";
+        $id   =~ s/>//;
+        my ($nhit, $hit) = runBlat(">$id\n$seq\n");
+        $hit  = '-' if ($nhit >= $repeat);
+        $out .= "$id\t$seq\t$nhit\t$hit\n";
         if ($nread % $block == 0) {
             print $out;
             $out     = '';
@@ -231,7 +234,7 @@ sub runBlat {
             # do nothing
         }
     }
-    return "$nhit\t$best_hit";
+    return ($nhit, $best_hit);
 }
 
 sub printVersion {
