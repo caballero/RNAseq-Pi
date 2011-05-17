@@ -33,7 +33,8 @@ OPTIONS
        --version       Print version number
     
 [1] Input file can be compressed (.gz|.bz2)
-[2] Output is a PSLX format file
+[2] Output is a PSLX format file, if file exists it will search the last read
+    and continue the streaming from that point (crash recovery).
 [3] Blat score = (2 * NumMatches) - NumMismatches - NumGaps 
 
 =head1 EXAMPLES
@@ -93,6 +94,7 @@ my $our_version = 0.1;
 my $time_ini    = time;
 my $nread       = 0;
 my $out         = undef;
+my $recover     = 0;
 
 # Calling options
 GetOptions(
@@ -126,7 +128,17 @@ if (defined $input) {
     open STDIN, "$input" or die "cannot read file $input\n";
 }
 if (defined $output) {
-    open STDOUT, ">$output" or die "cannot open $output\n";
+	if (-e $output) { # simple crash recovery mode
+		open F, "$output" or die "ouput file exits, but I cannot check it\n";
+		while (<F>) { 
+			$recover++; 
+		}
+		close F;
+		open STDOUT, ">>$output" or die "cannot open $output\n";
+	} 
+	else { 
+		open STDOUT, ">$output" or die "cannot open $output\n";
+	}
 }
 
 # Main program
@@ -134,6 +146,11 @@ if ($format eq 'fq') {
     $/ = "\n\@";
     while (<>) {
         $nread++;
+		
+		if ($recover > 0) {
+			next if ($nread <= $recover);
+		}
+		
         my ($id, $seq, $sep, $qual) = split (/\n/, $_);
         $id     =~ s/\@//;
         my $hit = runBlat(">$id\n$seq\n");
@@ -150,7 +167,12 @@ elsif ($format eq 'fa') {
     $/ = "\n>";
     while (<>) {
         $nread++;
-        my ($id, $seq) = split (/\n/, $_);
+        
+		if ($recover > 0) {
+			next if ($nread <= $recover);
+		}
+		
+		my ($id, $seq) = split (/\n/, $_);
         $id =~ s/>//;
         my $hit = runBlat(">$id\n$seq\n");
         $out   .= "$id\t$seq\t$hit\n";
