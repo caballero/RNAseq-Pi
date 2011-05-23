@@ -230,9 +230,9 @@ sub printSAM {
                     next;
                 }
                 else {
+                    $dif--;
                     if ($dif < 70) { # short deletion
-					    $dif--;
-                        $rpos[$i] = $dif . 'DM';
+					    $rpos[$i] = $dif . 'DM';
                     }
                     else {           # splice site
                         $rpos[$i] = $dif . 'NM';
