@@ -21,6 +21,7 @@ OPTIONS
     -s --sam        SAM file input*                 FILE          STDIN
     -o --out        Coverage output                 FILE          STDOUT
     -w --weight     Use weighted coverage**                       No
+    -u --uniq       Use uniquelly mapped reads                    No
     -h --help       Print this screen
     -v --verbose    Verbose mode
     
@@ -83,6 +84,7 @@ my $verbose    = undef;
 my $sam_f      = undef;
 my $out_f      = undef;
 my $weight     = undef;
+my $uniq       = undef;
 
 # Fetch options
 GetOptions(
@@ -90,7 +92,8 @@ GetOptions(
     'v|verbose'       => \$verbose,
     's|sam:s'         => \$sam_f,
     'o|out:s'         => \$out_f,
-    'w|weight'        => \$weight
+    'w|weight'        => \$weight,
+    'u|uniq'          => \$uniq
 );
 pod2usage(-verbose => 2) if (defined $help);
 
@@ -119,6 +122,7 @@ while (<>) {
         warn "NH variable not found, skiping weights\n" if (defined $verbose and $warn1 == 1);
         $nhit = 1;
     }
+    next unless ($nhit == 1 and defined $uniq);
     $nhit = 1 unless (defined $weight);
     my @line = split (/\t/, $_);
     next if ($line[1] == 4); # skip unmapped reads
