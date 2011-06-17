@@ -122,7 +122,11 @@ while (<>) {
         warn "NH variable not found, skiping weights\n" if (defined $verbose and $warn1 == 1);
         $nhit = 1;
     }
-    next unless ($nhit == 1 and defined $uniq);
+    
+    if (defined $uniq) {
+        next unless ($nhit == 1);
+    }
+    
     $nhit = 1 unless (defined $weight);
     my @line = split (/\t/, $_);
     next if ($line[1] == 4); # skip unmapped reads
