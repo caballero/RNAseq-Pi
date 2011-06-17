@@ -148,7 +148,7 @@ while (<>) {
 # Printing coverages per base
 foreach $chr (keys %data) {
     foreach $pos (sort {$a<=>$b} keys %{ $data{$chr} }) {
-        $val = $data{$chr}{$pos};
+        $val = sprintf("%.2f", $data{$chr}{$pos});
         print "$chr\t$pos\t$val\n";
     }
 }
