@@ -161,7 +161,7 @@ sub newBlock {
     $block{'num'}    = 1;
 }
 
-sub prinBlock {
+sub printBlock {
     if($block{'num'} >= $step and $block{'mean'} >= $mincov) {
         print join ("\t", $block{'seq'}, $block{'ini'}, $block{'end'}, $block{'mean'});
     }
