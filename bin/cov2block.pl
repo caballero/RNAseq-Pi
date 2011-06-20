@@ -114,6 +114,7 @@ while (<>) {
     next if ($cov < $mincov);
     if (defined $block{'seq'}) { #block is being expanded
         if ($seq ne $block{'seq'}) {
+            warn "processed sequence $block{'seq'}\n" if (defined $verbose);
             printBlock();
             newBlock($seq, $pos, $cov);
         }
@@ -125,7 +126,7 @@ while (<>) {
             $block{'mean'} = mean(@{ $block{'cov'} });
             $block{'sd'}   =   sd($block{'mean'}, @{ $block{'cov'} });
            
-            if( $cov >= ($block{'mean'} - $block{'sd'} - 0.1) and $cov <= ($block{'mean'} + $block{'sd'} + 0.1)) {
+            if( $cov >= ($block{'mean'} - $block{'sd'} - 1) and $cov <= ($block{'mean'} + $block{'sd'} + 1)) {
                 $block{'end'} = $pos;
                 $block{'num'}++;
                 push @{ $block{'cov'} }, $cov;
@@ -146,6 +147,8 @@ while (<>) {
     }
 }
 printBlock() if (defined $block{'num'}); # last block call
+warn "processed sequence $block{'seq'}\n" if (defined $verbose);
+
 
 ################################################################
 #           S  U  B  R  O  U  T  I  N  E  S                    #
