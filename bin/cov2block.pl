@@ -168,7 +168,7 @@ sub newBlock {
 
 sub printBlock {
     if($block{'num'} >= $step) {
-        $block{'mean'} = mean(@{ $block{'cov'} });
+        $block{'mean'} = sprintf("%.2f", mean(@{ $block{'cov'} }));
         print join ("\t", $block{'seq'}, $block{'ini'}, $block{'end'}, $block{'mean'});
         print "\n";
     }
