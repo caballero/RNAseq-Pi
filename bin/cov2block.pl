@@ -98,7 +98,7 @@ pod2usage(-verbose => 2) if (defined $help);
 
 # Opening files if required
 if (defined $input) {
-    warn "reading input from $input\n" if (defined $verbose);
+    warn "Reading input from: $input\n" if (defined $verbose);
     $input_h = $input;
     $input_h = "gunzip  -c $input | " if ($input =~ m/gz$/);
     $input_h = "bunzip2 -c $input | " if ($input =~ m/bz2$/);
@@ -106,9 +106,12 @@ if (defined $input) {
 }
 
 if (defined $output) {
-    warn "writing output in $output\n" if (defined $verbose);
+    warn "Writing output in: $output\n" if (defined $verbose);
     open STDOUT, ">$output" or die "cannot open $output\n";
 }
+warn "Window size      = $window\n" if (defined $verbose);
+warn "Step size        = $step\n" if (defined $verbose);
+warn "Minimal coverage = $mincov\n" if (defined $verbose);
 
 while (<>) {
     chomp;
@@ -116,7 +119,7 @@ while (<>) {
     next if ($cov < $mincov);
     if (defined $block{'seq'}) { #block is being expanded
         if ($seq ne $block{'seq'}) {
-            warn "processed sequence $block{'seq'}\n" if (defined $verbose);
+            warn "processed sequence: $block{'seq'}\n" if (defined $verbose);
             printBlock();
             newBlock($seq, $pos, $cov);
         }
@@ -149,7 +152,7 @@ while (<>) {
     }
 }
 printBlock() if (defined $block{'num'}); # last block call
-warn "processed sequence $block{'seq'}\n" if (defined $verbose);
+warn "processed sequence: $block{'seq'}\n" if (defined $verbose);
 
 
 ################################################################
