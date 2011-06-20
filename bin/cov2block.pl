@@ -131,7 +131,7 @@ while (<>) {
             $block{'mean'} = mean(@{ $block{'cov'} });
             $block{'sd'}   =   sd($block{'mean'}, @{ $block{'cov'} });
            
-            if( $cov >= ($block{'mean'} - $block{'sd'} - 1) and $cov <= ($block{'mean'} + $block{'sd'} + 1)) {
+            if( $cov >= ($block{'mean'} - (2*$block{'sd'}) - 1) and $cov <= ($block{'mean'} + (2*$block{'sd'}) + 1)) {
                 $block{'end'} = $pos;
                 $block{'num'}++;
                 push @{ $block{'cov'} }, $cov;
