@@ -98,13 +98,15 @@ pod2usage(-verbose => 2) if (defined $help);
 
 # Opening files if required
 if (defined $input) {
+    warn "reading input from $input\n" if (defined $verbose);
     $input_h = $input;
     $input_h = "gunzip  -c $input | " if ($input =~ m/gz$/);
     $input_h = "bunzip2 -c $input | " if ($input =~ m/bz2$/);
     open STDIN, "$input_h" or die "cannot open $input\n";
 }
 
-if (defined $output) {
+if (defined $output) 
+    warn "writing output in $output\n" if (defined $verbose);
     open STDOUT, ">$output" or die "cannot open $output\n";
 }
 
