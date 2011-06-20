@@ -125,7 +125,7 @@ while (<>) {
             $block{'mean'} = mean(@{ $block{'cov'} });
             $block{'sd'}   =   sd($block{'mean'}, @{ $block{'cov'} });
            
-            if( $cov >= ($block{'mean'} - $block{'sd'} - 0.01) and $cov <= ($block{'mean'} + $block{'sd'} + 0.01)) {
+            if( $cov >= ($block{'mean'} - $block{'sd'} - 0.1) and $cov <= ($block{'mean'} + $block{'sd'} + 0.1)) {
                 $block{'end'} = $pos;
                 $block{'num'}++;
                 push @{ $block{'cov'} }, $cov;
@@ -162,7 +162,7 @@ sub newBlock {
 }
 
 sub printBlock {
-    if($block{'num'} >= $step and $block{'mean'} >= $mincov) {
+    if($block{'num'} >= $step) {
         print join ("\t", $block{'seq'}, $block{'ini'}, $block{'end'}, $block{'mean'});
         print "\n";
     }
