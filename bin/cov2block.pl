@@ -105,7 +105,7 @@ if (defined $input) {
     open STDIN, "$input_h" or die "cannot open $input\n";
 }
 
-if (defined $output) 
+if (defined $output) {
     warn "writing output in $output\n" if (defined $verbose);
     open STDOUT, ">$output" or die "cannot open $output\n";
 }
