@@ -113,9 +113,13 @@ if (defined $output) {
     warn "Writing output in:  $output\n" if (defined $verbose);
     open STDOUT, ">$output" or die "cannot open $output\n";
 }
-warn "Window size       = $window\n" if (defined $verbose);
-warn "Step size         = $step\n" if (defined $verbose);
-warn "Minimal coverage  = $mincov\n" if (defined $verbose);
+
+if (defined $verbose) {
+    warn "Window size       = $window\n";
+    warn "Step size         = $step\n";
+    warn "Minimal coverage  = $mincov\n";
+    warn "Label to use      = $label\n";
+}
 
 while (<>) {
     chomp;
