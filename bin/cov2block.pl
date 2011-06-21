@@ -15,10 +15,12 @@ The coverages file is a text tab-delimited file with columns:
 This file must be sorted by columns 1-2 (sort -k1,1 -kn2,2)
 
 The output is a text tab-delimited file with columns:
-1. sequence/chromosome id
-2. start position
-3. end position
-4. average coverage
+1. identifier
+2. sequence/chromosome id
+3. start position
+4. end position
+5. average coverage
+6. standard desviation of coverages
 
 =head1 USAGE
 
@@ -31,6 +33,7 @@ OPIONS
     -w --window      Slicing window size          INT         100
     -s --step        Overlap between windows      INT         20
     -m --mincov      Minimal coverage             FLOAT       1.0
+    -l --label       Label for Blocks             STR         BLOCK
     
     -h --help        Print this screen
     -v --verbose     Verbose mode
@@ -79,9 +82,10 @@ my $output     = undef;
 my $window     =   100;
 my $step       =    20;
 my $mincov     =   1.0;
+my $label      = 'BLOCK';
 
 # Global variables
-my ($seq, $pos, $cov, $input_h);
+my ($seq, $pos, $cov, $input_h, $blk);
 my %block = ();
 
 # Fetch options
@@ -176,9 +180,10 @@ sub newBlock {
 
 sub printBlock {
     if($block{'num'} >= $step) {
+        $blk++;
         $block{'mean'} = sprintf("%.2f", mean(@{ $block{'cov'} }));
         $block{'sd'}   = sprintf("%.2f", sd($block{'mean'}, @{ $block{'cov'} }));
-        print join ("\t", $block{'seq'}, $block{'ini'}, $block{'end'}, $block{'mean'}, $block{'sd'});
+        print join ("\t", "$label$blk", $block{'seq'}, $block{'ini'}, $block{'end'}, $block{'mean'}, $block{'sd'});
         print "\n";
     }
 }
