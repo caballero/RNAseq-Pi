@@ -136,6 +136,11 @@ while (<>) {
                 $block{'num'}++;
                 push @{ $block{'cov'} }, $cov;
             }
+            elsif ($pos == $block{'end'} + 1) {
+                $block{'end'} = $pos;
+                $block{'num'}++;
+                push @{ $block{'cov'} }, $cov;
+            }
             else {
                 printBlock();
                 newBlock($seq, $pos, $cov);
