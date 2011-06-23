@@ -69,10 +69,12 @@ use Getopt::Long;
 use Pod::Usage;
 
 # Global variables
-my ($id, $chr, $pos, $cigar, $ini, $end);
+my ($id, $chr, $pos, $cigar, $ini, $end, $left, $right, $splice, $conn, $nread);
 my ($blk, $cnn);      # counters
-my ($sam_h $input_h); # filehandlers
+my ($sam_h, $input_h); # filehandlers
 my %blocks = ();
+my %conn   = ();
+my %rec    = ();
 
 # Parameters initialization
 my $help       = undef;
@@ -119,7 +121,7 @@ warn "loading blocks\n" if (defined $verbose);
 while (<IN>) {
     chomp;
     ($id, $chr, $ini, $end) = split (/\t/, $_);
-    $blocks{$chr}{$ini}{$end} = $id;
+    $blocks{$chr}{"$ini-$end"} = $id;
     $blk++;
 }
 warn "$blk blocks found\n" if (defined $verbose);
@@ -141,7 +143,7 @@ while (<>) {
             chop $tag;
             $left   = $pos;
             $pos   += $tag;
-            $rigth  = $pos;
+            $right  = $pos;
             $splice = checkBlocks($chr, $left, $right);
             $cnn++ if ($splice == 1);
         }
@@ -151,13 +153,38 @@ while (<>) {
     }
 }
 
+warn "writing results\n" if (defined $verbose);
+foreach $conn (keys %conn) {
+    ($left, $right) = split (/-/, $conn);
+    $nread = $conn{$conn};
+    print "$left\t$right\t$nread\n";
+}
+
 sub checkBlocks {
     my ($c, $l, $r) = @_;
     my $res = 0;
     my $b1  = undef;
     my $b2  = undef;
-    foreach my $i (keys %{ $blocks{$c} }) {
-        
+    
+    if (defined $rec{"$c:$l:$r"}) {
+        $conn{ $rec{"$c:$l:$r"} }++;
+        return 1;
+    }
+    
+    foreach my $b (keys %{ $blocks{$c} }) {
+        last if (defined $b1 and defined $b2);
+        my ($i, $e) = split (/-/, $b);
+        if ($l >= $i and $l <= $e) {
+            $b1 = $blocks{$c}{$b};
+        }
+        if ($r >= $i and $r <= $e) {
+            $b2 = $blocks{$c}{$b};
+        }
+    }
+    if (defined $b1 and defined $b2) {
+        $res = 1;
+        $conn{"$b1-$b2"}++;
+        $rec{"$c:$l:$r"} = "$b1-$b2";
     }
     return $res;
 }
