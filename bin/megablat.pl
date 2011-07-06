@@ -26,6 +26,7 @@ OPTIONS
     -m --maxintron     Maximal intron size               INT        750000
     -r --repeat        Don't report hits more than this  INT        5
     -a --allhits       Keep all hits (no filter step)
+    -d --random        Report one random hit
     -x --port          Use this port                     INT        1111
     -y --host          Use this host name                NAME       localhost
 
@@ -90,6 +91,7 @@ my $port      = 1111;          # local port number
 my $exec      = '/proj/hoodlab/share/programs/blat';
 my $allhits   = undef;         # keep all hits flag
 my $repeat    = 5;
+my $random    = undef;
 
 # Main variables
 my $our_version = 0.1;
@@ -114,6 +116,7 @@ GetOptions(
     'e|execdir:s'      => \$exec,
     'a|allhits'        => \$allhits,
     'r|repeat:i'       => \$repeat,
+    'd|random'         => \$random,
     'version'          => \$version
     ) or pod2usage(-verbose => 2);
     
@@ -221,13 +224,13 @@ sub runBlat {
         # Score = (2 * Matches) - Mismatches - QueryGaps - TargetGaps
         my $score = (2 * $array[0]) - $array[1] - $array[4] - $array[6];
         if ($score > $best) {
-            $best_hit  = join ":", @array;
+            $best_hit  = join ";", @array;
             $best = $score;
             $nhit = 1;
         }
         elsif ($score == $best) {
             $best_hit .= '|';
-            $best_hit .= join ":", @array;
+            $best_hit .= join ";", @array;
             $nhit++;
         }
         else {
