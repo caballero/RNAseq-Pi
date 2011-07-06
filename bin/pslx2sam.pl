@@ -159,7 +159,7 @@ sub printSAM {
    
     my @hits = split (/\|/, $$hits_ref);
     foreach $hit (@hits) {
-        my @arr = split (/:/, $hit);
+        my @arr = split (/;/, $hit);
         if ($arr[8] eq '-') {
             $dir  = 16;
             $ctag = "XS:A:-";
