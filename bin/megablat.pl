@@ -237,6 +237,13 @@ sub runBlat {
             # do nothing
         }
     }
+    
+    # Choose a random hit if $random is activated
+    if (defined $random and $nhit > 1) {
+        my @array = split (/\|/, $best_hit);
+        $best_hit = $array[int(rand @array)];
+    }
+    
     return ($nhit, $best_hit);
 }
 
