@@ -68,7 +68,7 @@ my $dir     = '.';
 
 # Global variables
 my ($file, $count);
-my $types = 'fq|fastq|fa|fasta|sam';
+my $types = 'fq|fastq|fa|fasta|sam|blat|psl';
 # Calling options
 GetOptions(
     'h|help'           => \$help,
@@ -109,9 +109,10 @@ while ($file = readdir DIR) {
 sub defineType {
     my $f = shift @_;
     my $t = 'NA';
-    if    ($f =~ m/[fq|fastq](.gz|.bz2)*$/i) { $t = 'FQ'; }
-    elsif ($f =~ m/[fa|fasta](.gz|.bz2)*$/i) { $t = 'FA'; }
-    elsif ($f =~ m/sam(.gz|.bz2)*$/i)        { $t = 'SAM'; }
+    if    ($f =~ m/[fq|fastq](.gz|.bz2)*$/i) { $t =   'FQ'; }
+    elsif ($f =~ m/[fa|fasta](.gz|.bz2)*$/i) { $t =   'FA'; }
+    elsif ($f =~ m/sam(.gz|.bz2)*$/i)        { $t =  'SAM'; }
+    elsif ($f =~ m/[blat|psl](.gz|.bz2)*$/i) { $t = 'BLAT'; }
     
     return $t;
 }
@@ -140,6 +141,10 @@ sub  countReads {
         }
         elsif ($t eq 'FQ') {
             $c++ if (m/^\@/);
+        }
+        elsif ($t eq 'BLAT') {
+            my @a = split (/\t/, $_);
+            $c++ if ($a[2] > 0);
         }
         else {
             warn "format not recognized for $f => $t\n";
