@@ -17,7 +17,7 @@ OPTIONS
     -i --input         Input file*              FILE        STDIN
     -o --output        Output file              FILE        STDOUT
     -u --unmap         Keep unmaped reads                   No
-    -m --max-hits      Report up to Max hits    INT         5
+    -m --max-hits      Report up to Max hits    INT         4
     -p --poly-map      Report polymapped reads              No
     -s --score         Quality score            Phred+64    I 
     -q --mapq          Map quality score        Phred       255
@@ -77,7 +77,7 @@ my $unmap      = undef;
 my $polymap    = undef;
 my $qual       =   'I';
 my $mapq       =   255;
-my $maxhits    =     5;
+my $maxhits    =     4;
 
 # Fetch options
 GetOptions(
