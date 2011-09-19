@@ -159,7 +159,6 @@ sub printSAM {
    
     my @hits = split (/\|/, $$hits_ref);
     foreach $hit (@hits) {
-        warn "$hit\n";
         my @arr = split (/;/, $hit);
         if ($arr[8] eq '-') {
             $dir  = 16;
