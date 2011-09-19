@@ -158,12 +158,13 @@ sub printSAM {
     my ($chr, $dir, $pos, $read, $q, $mis, $cig, $ctag, $hit);
    
     my @hits = split (/\|/, $$hits_ref);
+    warn "$$hits_ref\n";
     foreach $hit (@hits) {
         my @arr = split (/;/, $hit);
         if ($arr[8] eq '-') {
             $dir  = 16;
             $ctag = "XS:A:-";
-            $read = revcomp($$seq_ref) if ($dir == 16);
+            $read = revcomp($$seq_ref);
         }    
         else {
             $dir  = 0;
