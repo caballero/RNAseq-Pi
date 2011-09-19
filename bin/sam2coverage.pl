@@ -166,7 +166,7 @@ warn "printing coverages\n" if (defined $verbose);
 foreach $chr (keys %data) {
     foreach $pos (sort {$a<=>$b} keys %{ $data{$chr} }) {
         my $w = sprintf("%.2f", $data{$chr}{$pos}{'w'});
-        my $u = 0; $u = $data{$chr}{$pos}{'u'} if (defined $data{$chr}{$pos}{'w'});
+        my $u = 0; $u = $data{$chr}{$pos}{'u'} if (defined $data{$chr}{$pos}{'u'});
         my $p = 0; $p = $data{$chr}{$pos}{'p'} if (defined $data{$chr}{$pos}{'p'});
         my $s = 0; $s = $data{$chr}{$pos}{'s'} if (defined $data{$chr}{$pos}{'s'});
         print "$chr\t$pos\t$w\t$u\t$p\t$s\n";
