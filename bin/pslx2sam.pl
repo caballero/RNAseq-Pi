@@ -158,8 +158,8 @@ sub printSAM {
     my ($chr, $dir, $pos, $read, $q, $mis, $cig, $ctag, $hit);
    
     my @hits = split (/\|/, $$hits_ref);
-    warn "$$hits_ref\n";
     foreach $hit (@hits) {
+        warn "$hit\n";
         my @arr = split (/;/, $hit);
         if ($arr[8] eq '-') {
             $dir  = 16;
