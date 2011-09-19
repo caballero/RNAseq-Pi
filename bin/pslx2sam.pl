@@ -17,7 +17,7 @@ OPTIONS
     -i --input         Input file*              FILE        STDIN
     -o --output        Output file              FILE        STDOUT
     -u --unmap         Keep unmaped reads                   No
-    -m --max-hits      Report up to Max hits    INT         10
+    -m --max-hits      Report up to Max hits    INT         5
     -p --poly-map      Report polymapped reads              No
     -s --score         Quality score            Phred+64    I 
     -q --mapq          Map quality score        Phred       255
@@ -75,9 +75,9 @@ my $input      = undef;
 my $output     = undef;
 my $unmap      = undef;
 my $polymap    = undef;
-my $qual       = 'I';
-my $mapq       = 255;
-my $maxhits    = 10;
+my $qual       =   'I';
+my $mapq       =   255;
+my $maxhits    =     5;
 
 # Fetch options
 GetOptions(
@@ -160,7 +160,6 @@ sub printSAM {
     my @hits = split (/\|/, $$hits_ref);
     foreach $hit (@hits) {
         my @arr = split (/;/, $hit);
-        warn "$hit\n" unless (defined $arr[8]);
         if ($arr[8] eq '-') {
             $dir  = 16;
             $ctag = "XS:A:-";
