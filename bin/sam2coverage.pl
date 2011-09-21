@@ -142,7 +142,7 @@ while (<>) {
             next;
         }
         elsif ($cig eq 'N') {
-            $data{$chr}{$pos}{'s'}++;
+            $data{$chr}{$pos - 1}{'s'}++;
             $pos += $num;
             $data{$chr}{$pos}{'s'}++;
         }
