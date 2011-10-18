@@ -2,9 +2,13 @@
 
 =head1 NAME
 
+checkPairs.pl
+
 =head1 DESCRIPTION
 
-checkPairs.pl
+Check for missing pairs in 2 paired-end fastq files.
+
+CAUTION: The first pair is loaded to memory, be sure you have enough.
 
 =head1 AUTHOR
 
@@ -34,7 +38,7 @@ along with code.  If not, see <http://www.gnu.org/licenses/>.
 use strict;
 use warnings;
 
-$ARGV[3] or die "usage: checkPairs.pl PAIR1.fq PAIR2.fq PAIR1_OUT.fq PAIR2_OUT.fq\n";
+$ARGV[3] or die "usage: checkPairs.pl PAIR_1_IN.fq PAIR_2_IN.fq PAIR_1_OUT.fq PAIR_2_OUT.fq\n";
 
 my $par1_f = shift @ARGV; 
 my $par2_f = shift @ARGV;
@@ -62,8 +66,8 @@ my $np1  = 0;
 my $np2  = 0;
 my $npp  = 0;
 my $sid  = undef;
-my $blob = undef;
 my $ln   = 0
+
 while (<P1>) {
     $ln++;
     if ($ln == 1) {
@@ -78,23 +82,26 @@ while (<P1>) {
     }
     $par1{$sid} .= $_;
 }
-warn "$np1 sequences loaded\n"; 
+warn "still alive!, $np1 sequences loaded\n"; 
 
 warn "pairing with second pair $par2_f\n";
 $ln = 0;
 while (<P2>) {
-    s/\@//g;
-    if (m/(.+:\d+:\d+:\d+:\d+)#/) {
-        $sid = $1;
+	$ln++;
+    if ($ln == 1) {
         $np2++;
+        $sid = $_;        
+		chomp $sid;
+        $sid =~ s/^\@//;
+        $sid =~ s/\/\d$//;
         if (defined $par1{$sid}) {
             $npp++;
-            print O1 "\@$par1{$sid}";
-            print O2 "\@$_";
+            print O1 $par1{$sid};
+            print O2 $_;
         }
     }
-    else {
-        die "error parsing $par2_f -> $_\n";
+    elsif ($ln == 4) {
+        $ln = 0;
     }
 }
-print "$np2 sequences read\n$npp are valid pairs\nDone\n";
+warn "$np2 sequences read\n$npp are valid pairs\nDone\n";
