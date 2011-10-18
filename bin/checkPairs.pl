@@ -66,7 +66,7 @@ my $np1  = 0;
 my $np2  = 0;
 my $npp  = 0;
 my $sid  = undef;
-my $ln   = 0
+my $ln   = 0;
 
 while (<P1>) {
     $ln++;
