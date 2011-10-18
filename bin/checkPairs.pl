@@ -66,6 +66,7 @@ my $np1  = 0;
 my $np2  = 0;
 my $npp  = 0;
 my $sid  = undef;
+my $blob = undef;
 my $ln   = 0;
 
 while (<P1>) {
@@ -94,14 +95,16 @@ while (<P2>) {
 		chomp $sid;
         $sid =~ s/^\@//;
         $sid =~ s/\/\d$//;
-        if (defined $par1{$sid}) {
-            $npp++;
-            print O1 $par1{$sid};
-            print O2 $_;
-        }
     }
     elsif ($ln == 4) {
         $ln = 0;
+        if (defined $par1{$sid}) {
+            $npp++;
+            print O1 $par1{$sid};
+            print O2 $blob;
+        }
+		$blob = undef;
     }
+	$blob .= $_;
 }
 warn "$np2 sequences read\n$npp are valid pairs\nDone\n";
