@@ -57,24 +57,31 @@ open P2,  "$par2_h" or die "cannot open $par2_f\n";
 open O1, ">$out1_f" or die "cannot open $out1_f\n";
 open O2, ">$out2_f" or die "cannot open $out2_f\n";
 
-print "loading first pair $par1_f\n";
-my $np1 = 0;
-my $np2 = 0;
-my $npp = 0;
-my $sid = undef;
-$/ = "\n\@";
+warn "loading first pair $par1_f\n";
+my $np1  = 0;
+my $np2  = 0;
+my $npp  = 0;
+my $sid  = undef;
+my $blob = undef;
+my $ln   = 0
 while (<P1>) {
-    s/\@//g;
-    if (m/(.+:\d+:\d+:\d+:\d+)#/) {
-        $par1{$1} = $_;
+    $ln++;
+    if ($ln == 1) {
         $np1++;
+        $sid = $_;
+        chomp $sid;
+        $sid =~ s/^\@//;
+        $sid =~ s/\/\d$//;
     }
-    else {
-        die "error parsing $par1_f -> $_\n";
+    elsif ($ln == 4) {
+        $ln = 0;
     }
+    $par1{$sid} .= $_;
 }
+warn "$np1 sequences loaded\n"; 
 
-print "$np1 sequences loaded\npairing with second pair $par2_f\n";
+warn "pairing with second pair $par2_f\n";
+$ln = 0;
 while (<P2>) {
     s/\@//g;
     if (m/(.+:\d+:\d+:\d+:\d+)#/) {
