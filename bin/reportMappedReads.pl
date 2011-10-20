@@ -101,13 +101,13 @@ while ($file = readdir DIR) {
     
     next unless ($file =~ m/[$types](.gz|.bz2)*$/i);
 
-    warn "analyzing file $file ..." if (defined $verbose);
+    warn "analyzing file $file\n" if (defined $verbose);
 
     my $type  = defineType($file);
-    warn " file type is $type ..." if (defined $verbose);
+    warn "    file type is $type\n" if (defined $verbose);
 
     my $count = countReads($file, $type);
-    warn " $count elements found\n" if (defined $verbose);
+    warn "    $count elements found\n" if (defined $verbose);
 
     print "$file\t$count\n"
 }
