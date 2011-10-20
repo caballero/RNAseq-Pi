@@ -81,6 +81,7 @@ GetOptions(
 
 pod2usage(-verbose => 2) if (defined $help);
 
+warn "reading files in $dir\n" if (defined $verbose);
 # opening files
 opendir DIR, "$dir" or die "cannot open directory $dir\n";
 
@@ -99,8 +100,15 @@ while ($file = readdir DIR) {
     }
     
     next unless ($file =~ m/[$types](.gz|.bz2)*$/i);
+
+    warn "analyzing file $file ..." if (defined $verbose);
+
     my $type  = defineType($file);
+    warn " file type is $type ..." if (defined $verbose);
+
     my $count = countReads($file, $type);
+    warn " $count elements found\n" if (defined $verbose);
+
     print "$file\t$count\n"
 }
 
