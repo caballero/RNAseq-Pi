@@ -122,5 +122,6 @@ while (<>) {
         print $out $seq;
         $out = $out_fh if ($out eq $out_fh_max);
         $nl  = 0;
+        $seq = '';
     }
 }
