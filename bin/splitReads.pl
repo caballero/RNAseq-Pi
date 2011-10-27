@@ -56,7 +56,7 @@ along with code.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
 
-use strict;
+#use strict;
 use warnings;
 use Getopt::Long;
 use Pod::Usage;
