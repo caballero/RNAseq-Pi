@@ -11,7 +11,7 @@ If we have more than one match, it tries to collapse the coordinates (several
 positions in different transcripts could be originated from the same genomic 
 location). 
 
-Altered fields are: TARGET, POS_TARGET, CIGAR
+Altered fields are: BITWISE_FLAG, TARGET, POS_TARGET, CIGAR
 
 =head1 USAGE
 
@@ -36,11 +36,11 @@ OPTIONS:
     
 =head1 EXAMPLES
 
-perl knowGene2Genome.pl -g human.gtf [OPTIONS] < SAM > SAM
+perl knowGene2Genome.pl -g human.gtf [OPTIONS] < SAM_cDNA > SAM.chr
 
-perl knowGene2Genome.pl -g human.gtf -i SAM -o SAM
+perl knowGene2Genome.pl -g human.gtf -i SAM.cDNA -o SAM.chr
 
-perl knowGene2Genome.pl -g human.gtf -i SAM.gz -u -t > SAM
+perl knowGene2Genome.pl -g human.gtf -i SAM_cDNA.gz -u -t > SAM.chr
 
 =head1 AUTHOR
 
@@ -133,14 +133,30 @@ while (<>) {
     my $hit  = $line[2];
     my $pos  = $line[3];
     my $cig  = $line[5];
-    next unless ($cig =~ m/^\d+M$/); # only exact matches for now (no indels/masking)
-    
+	# filtering of the hits
+    unless ($cig =~ m/^\d+M$/) { # only exact matches for now (no indels/masking)
+		print BAD $_ if (defined $excluded);
+		next;
+	}
+	if ($flag & 4) { # skip unmapped reads
+		print BAD $_ if (defined $excluded);
+		next;
+	}
+	
+	if ($flag & 1) {                 # if the read is paired
+		unless ($flag & 2) {         # skip unless both pair are properly paired
+			print BAD $_ if (defined $excluded);
+			next;
+		}
+	}
+	
 	unless (defined $gtf{$hit}{'trs'}) {
         #warn "undefined exon information for $read $hit $pos $cig\n" if (defined $verbose);
-        next;
+        print BAD $_ if (defined $excluded);
+		next;
     }
     my $dir  = '+'; 
-    $dir = '-' if ($flag == 16);
+    $dir = '-' if ($flag & 16);
     if (defined $gtf{$hit}{'chr'}) {
         my ($new_hit, $new_pos, $new_cig, $new_dir) = decodeMap($hit, $pos, $cig, $dir);
         if (defined $uniq) {
@@ -149,11 +165,11 @@ while (<>) {
 		}
 		
 		if ($dir ne $new_dir) { # swap positions in reverse hits
+			$line[1]  = flipBitDir($line[1]);
 			$line[9]  = rc($line[9]);
 			$line[10] = reverse($line[10]);
 		}
 		
-        if ($new_dir eq '+') { $line[1] = 0; } else { $line[1] = 16; }
         $line[2] = $new_hit;
         $line[3] = $new_pos;
         $line[5] = $new_cig;
@@ -294,4 +310,43 @@ sub load_num_seq {
 		$gtf{$tid}{'trs'} = $pos;
 	}
 	close SEQ;
+}
+
+sub flipBitDir {
+	my $old = shift @_;
+	my $new = $old;
+	my @bin = dec2bin($old_val);
+	$bin[4] = swapBit($bin[4]);
+	$bin[5] = swapBit($bin[5]);
+	$new    = bin2dec(@bin);
+	return $new;
+}
+
+sub swapBit {
+	my $x = shift @_;
+	if ($x == 1) {
+		return 0;
+	}
+	else ($x == 0) {
+		return 1;
+	}
+}
+
+sub dec2bin {
+	my $num = shift @_;
+	my @bit = ();
+	my @val = (1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024); #11 bits
+	foreach my $val (@val) {
+		($num & $val) ? push @bit, 1 : push @bit, 0;
+	}
+	return @bit;
+}
+sub bin2dec {
+	my $sum = 0;
+	my $pot = 0;
+	foreach my $bit (@_) {
+		$sum += 2**$pot if ($bit == 1);
+		$pot++;
+	}
+	return $sum;
 }
