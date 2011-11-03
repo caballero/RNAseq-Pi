@@ -317,7 +317,9 @@ sub flipBitDir {
 	my $new = $old;
 	my @bin = dec2bin($old_val);
 	$bin[4] = swapBit($bin[4]);
-	$bin[5] = swapBit($bin[5]);
+	if ($bin[0] == 1) {
+		$bin[5] = swapBit($bin[5]);
+	}
 	$new    = bin2dec(@bin);
 	return $new;
 }
