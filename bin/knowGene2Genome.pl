@@ -315,7 +315,7 @@ sub load_num_seq {
 sub flipBitDir {
 	my $old = shift @_;
 	my $new = $old;
-	my @bin = dec2bin($old_val);
+	my @bin = dec2bin($old);
 	$bin[4] = swapBit($bin[4]);
 	if ($bin[0] == 1) {
 		$bin[5] = swapBit($bin[5]);
@@ -329,7 +329,7 @@ sub swapBit {
 	if ($x == 1) {
 		return 0;
 	}
-	else ($x == 0) {
+	else {
 		return 1;
 	}
 }
