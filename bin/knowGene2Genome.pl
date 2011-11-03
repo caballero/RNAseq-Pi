@@ -177,6 +177,9 @@ while (<>) {
 		if (defined $target) { # add target name
 			push @line, "YT:Z:$hit";
 		}
+		
+		push @line, "XS:A:$new_dir"; # Cufflinks specific field
+		
         $_ = join ("\t", @line);
         print "$_\n";
     } 
