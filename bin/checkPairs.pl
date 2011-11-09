@@ -89,6 +89,7 @@ warn "pairing with second pair $par2_f\n";
 $ln = 0;
 while (<P2>) {
 	$ln++;
+	$blob .= $_;
     if ($ln == 1) {
         $np2++;
         $sid = $_;        
@@ -105,6 +106,5 @@ while (<P2>) {
         }
 		$blob = undef;
     }
-	$blob .= $_;
 }
 warn "$np2 sequences read\n$npp are valid pairs\nDone\n";
