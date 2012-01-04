@@ -89,7 +89,7 @@ sub filterReads {
 		
 		# filter gene hits
 		my $gene   = \@{ $genes{$chr} };
-		my $inter  = $RS->RSintersection($gene, $pos);
+		   $inter  = $RS->RSintersection($gene, $pos);
 		my $isGene = shift @$inter;
 		push @g, $r if (defined $isGene);
 	}
