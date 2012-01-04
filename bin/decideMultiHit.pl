@@ -8,7 +8,7 @@ my $gene_file = 'genes.block';
 my $bad_file  = 'hg19_bad_regions.blocks';
 
 my %genes;
-my %bads:
+my %bads;
 my ($filtered, $chr, $ini, $end, $lab);
 
 warn "loading gene coordinates\n";
