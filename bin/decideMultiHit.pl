@@ -4,8 +4,8 @@ use strict;
 use warnings;
 use RSutils;
 
-my $gene_file = 'genes.block';
-my $bad_file  = 'hg19_bad_regions.blocks';
+my $genes_file = 'genes.block';
+my $bad_file   = 'hg19_bad_regions.blocks';
 
 my %genes;
 my %bads;
@@ -16,7 +16,7 @@ open G, "$genes_file" or die "cannot read $genes_file\n";
 while (<G>) {
     chomp;
 	($chr, $ini, $end, $lab) = split (/\t/, $_);
-	push @{ %genes{$chr} }, "$ini\t$end\t$lab";
+	push @{ $genes{$chr} }, "$ini\t$end\t$lab";
 }
 close G;
 
@@ -25,7 +25,7 @@ open B, "$bad_file" or die "cannot read $bad_file\n";
 while (<B>) {
     chomp;
 	($chr, $ini, $end, $lab) = split (/\t/, $_);
-	push @{ %bads{$chr} }, "$ini\t$end\t$lab";
+	push @{ $bads{$chr} }, "$ini\t$end\t$lab";
 }
 close B;
 
