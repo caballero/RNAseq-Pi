@@ -36,7 +36,7 @@ warn "loading bad region coordinates\n";
 open B, "$bad_file" or die "cannot read $bad_file\n";
 while (<B>) {
     chomp;
-	($chr, $ini, $end, $lab) = split (/\t/, $_);
+	my ($chr, $ini, $end, $lab) = split (/\t/, $_);
 	push @{ $bad{$chr} }, "$ini\t$end\t$lab";
 }
 close B;
