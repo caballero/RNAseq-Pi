@@ -50,7 +50,7 @@ while (<BI>) {
 	if (defined $bad{$chr}[0]) {
 		$ini--;
 		my $pos   = [ "$ini\t$end\tblock" ];
-		my $bad   = \@{ $bads{$chr} };
+		my $bad   = \@{ $bad{$chr} };
 		my $inter = $RS->RSintersection($bad, $pos);
 		my $isBad = shift @$inter;
 		if (defined $isBad) {
