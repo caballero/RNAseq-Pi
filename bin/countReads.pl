@@ -90,7 +90,7 @@ if (defined $out) {
 
 warn "loading gene coordinates from $genes\n" if (defined $verbose);
 open G, "$genes" or die "cannot open $genes\n";
-while (<F>) {
+while (<G>) {
     chomp;
     ($chr, $ini, $end, $gen) = split (/\t/, $_);
     $ini++;
