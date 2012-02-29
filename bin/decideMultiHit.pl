@@ -14,7 +14,7 @@ and try to resolve multihit reads prefering gene regions.
   perl decideMultiHit.pl -b BAM -g GENES -o OUTPUT
 
   PARAMETER        DESCRIPTION                VALUE       DEFAULT
-  -b --bam         BAM file                   FILE
+  -b --bam         BAM file                   FILE        STDIN
   -g --genes       Gene annotation (BED)      FILE
   -u --unwanted    Bad regions (BED)          FILE
   -o --out         Output file                FILE        STDOUT
@@ -24,6 +24,12 @@ and try to resolve multihit reads prefering gene regions.
   
 
 =head1 EXAMPLES
+
+  perl decideMultiHit.pl -b BAM -g GENES -o OUTPUT
+  
+  perl decideMultiHit.pl -g GENES -o OUTPUT < SAM
+  
+  samtools view BAM | perl decideMultiHit.pl -g GENES > OUTPUT
 
 =head1 AUTHOR
 
@@ -72,8 +78,12 @@ my $samtools = '/proj/hoodlab/share/programs/samtools/samtools view';
 
 # Main variables
 my $our_version = 0.1;     # Script version number
-my %genes;
-my %bads;
+my %genes = ();
+my %bads  = ();
+my @reads = ();
+my $RS    = new RSutils;
+my $last  = 'first';
+
 my ($filtered, $chr, $ini, $end, $lab, $bin);
 
 # Calling options
@@ -87,7 +97,7 @@ GetOptions(
 ) or pod2usage(-verbose => 2);
     
 pod2usage(-verbose => 2) if     (defined $help);
-pod2usage(-verbose => 2) unless (defined $bam_file and defined $genes_file and defined $bad_file);
+pod2usage(-verbose => 2) unless (defined $genes_file and defined $bad_file);
 printVersion() if (defined $version);
 
 
@@ -111,10 +121,10 @@ while (<B>) {
 }
 close B;
 
-my $RS = new RSutils;
-
-my $last = 'first';
-my @reads;
+if (defined $bam_file) {
+    my $samtools = '/proj/hoodlab/share/programs/samtools/samtools';
+    open STDIN, "$samtools view $bam | " or die "cannot open $bam\n";
+}
 
 while (<>) {
 	chomp;
