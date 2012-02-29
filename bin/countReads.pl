@@ -112,13 +112,15 @@ foreach $chr (keys %genes) {
         next unless (defined $reads);
         @reads = split (/\n/, $reads);
         foreach $read (@reads) {
+            $read =~ m/NH:i:(\d+)/;
+            $nh   = $1;
             if (defined $uniq) {
-                next unless ($read =~ m/NH:i:1/);
+                next if ($nh > 1);
             }
             ($rid) = split (/\t/, $read);
             next if (defined $seen{$rid});
-            $counts{$gen}++;
-            $seen{$rid} = 1;
+            $counts{$gen} += int(1 / $nh);
+            $seen{$rid}    = 1;
         }
     }
     %seen = ();
