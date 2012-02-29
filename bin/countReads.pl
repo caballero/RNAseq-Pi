@@ -88,7 +88,7 @@ if (defined $out) {
     open STDOUT, ">$out" or die "cannot write $out\n";
 }
 
-warn "loading gene coordinates from $gene\n" if (defined $verbose);
+warn "loading gene coordinates from $genes\n" if (defined $verbose);
 open G, "$genes" or die "cannot open $genes\n";
 while (<F>) {
     chomp;
