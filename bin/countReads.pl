@@ -77,7 +77,11 @@ my ($chr, $ini, $end, $gen, $range, $reads, $read, $rid);
 # Calling options
 GetOptions(
     'h|help'           => \$help,
-    'v|verbose'        => \$verbose
+    'v|verbose'        => \$verbose,
+    'g|genes:s'        => \$genes,
+    'b|bam:s'          => \$bam,
+    'u|uniq'           => \$uniq,
+    'o|out:s'          => \$out
 ) or pod2usage(-verbose => 2);
     
 pod2usage(-verbose => 2) if     (defined $help);
