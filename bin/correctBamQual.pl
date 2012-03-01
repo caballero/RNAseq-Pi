@@ -68,6 +68,7 @@ my $help     = undef;         # Print help
 my $verbose  = undef;         # Verbose mode
 my $version  = undef;         # Version call flag
 my $bam      = undef;
+my $sam      = undef;
 my $fastq    = undef;
 my $out      = undef;
 my $convert  = undef;
@@ -89,7 +90,8 @@ printVersion() if (defined $version);
 pod2usage(-verbose => 2) if (defined $help);
 die "please specify only one option for -s|-b\n" if (defined $bam and defined $sam);
 die "please specify a FASTQ file (-f)\n"     unless (defined $fastq);
-die "please specify a SAM output (-o)\n"         if (defined $convert and !defined $out)
+die "please specify a SAM output (-o)\n"         if (defined $convert and !defined $out);
+
 # Open files (if required)
 if (defined $bam) {
     my $bam_fh = defineFH($bam);
@@ -133,7 +135,7 @@ while (<>) {
     else {
         warn " .. missing quality scores for $line[0]\n" if (defined $verbose);
     }
-    print join "\t" @line;
+    print join "\t", @line;
 }
 
 if (defined $convert) {
