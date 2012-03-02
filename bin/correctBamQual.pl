@@ -114,7 +114,7 @@ if (defined $out) {
 my $fastq_fh = defineFH($fastq);
 open FQ, "$fastq_fh" or die "cannot open file $fastq_fh\n";
 
-warn "loading quality scores\n" if (defined $verbose);
+warn "loading quality scores from $fastq\n" if (defined $verbose);
 $line = 0;
 while (<FQ>) {
     chomp;
@@ -122,6 +122,7 @@ while (<FQ>) {
     if ($line == 1) {
         s/^\@//;
         s/#\d+\/\d+$//;
+        s/:/_/g;
         $read = $_;
     }
     elsif ($line == 4) {
@@ -130,7 +131,7 @@ while (<FQ>) {
     }
 }
 
-warn "changing quality scores\n" if (defined $verbose);
+warn "changing quality scores from $bam\n" if (defined $verbose);
 while (<>) {
     my @line = split (/\t/, $_);
     $line[0] =~ s/#\d+\/\d+$//;
@@ -144,7 +145,7 @@ while (<>) {
 }
 
 if (defined $convert) {
-    warn "converting SAM to BAM\n" if (defined $verbose);
+    warn "converting SAM to BAM ($out)\n" if (defined $verbose);
     my $bam_out = $out;
     $bam_out =~ s/sam$/bam/;
     system ("samtools view -bS $out > $bam_out");
