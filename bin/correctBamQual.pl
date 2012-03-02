@@ -83,7 +83,12 @@ my ($read, $qual, $line);
 # Calling options
 GetOptions(
     'h|help'           => \$help,
-    'v|verbose'        => \$verbose
+    'v|verbose'        => \$verbose,
+    'b|bam:s'          => \$bam,
+    'f|fastq:s'        => \$fastq,
+    's|sam:s'          => \$sam,
+    'o|out:s'          => \$out,
+    'c|convert'        => \$convert
 ) or pod2usage(-verbose => 2);
 printVersion() if (defined $version);
    
