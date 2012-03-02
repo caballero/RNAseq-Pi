@@ -48,6 +48,10 @@ while (<>) {
         my $n = convertName($_);
         $_ = $n;
     }
+    elsif ($i == 3) {
+        my $n = convertName($_);
+        $_ = $n;
+    }
     elsif ($i == 4) {
         my $q = convertQual($_);
         $_ = $q;
