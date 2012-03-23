@@ -72,7 +72,7 @@ my %genes       = ();      # Gene coordinates
 my %counts      = ();      # Reads per gene
 my %seen        = ();      # Reads already counted (for spliced reads per chr)
 my @reads       = ();      # Reads in a range
-my ($chr, $ini, $end, $gen, $range, $reads, $read, $rid);
+my ($chr, $ini, $end, $gen, $range, $reads, $read, $rid, $nh);
 
 # Calling options
 GetOptions(
