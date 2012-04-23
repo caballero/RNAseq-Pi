@@ -11,12 +11,24 @@ Convert a Fastq file into a regular Fasta file (losing base quality scores).
 
 =cut
 
-$/ = "\n\@";
+my $ln = 0; # Line number
 while (<>) {
-    my @arr = split (/\n/, $_);
-    $arr[0] =~ s/^\@//;
-    $arr[0] =~ s/\s+/_/;
-    print ">$arr[0]\n$arr[1]\n";
+    $ln++;
+    if ($ln == 1) {
+        s/^\@/>/;
+        s/\s+/_/;   
+    }
+    elsif ($ln == 2) {
+        # do nothing, its the sequence   
+    }
+    elsif ($ln == 3) {
+        next;
+    }
+    elsif ($ln == 4) {
+        $ln = 0;
+        next;
+    }
+    print $_;
     
 }
 
