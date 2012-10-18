@@ -102,10 +102,10 @@ close GTF;
 warn "writing sequences in $out\n";
 open O, ">$out" or die "cannot write file $out\n";
 while (($id, $seq) = each %seq) {
-    print ">$id\n";
+    print O ">$id\n";
     while ($seq) {
         my $s = substr ($seq, 0, 80);
-        print "$s\n";
+        print O "$s\n";
         substr ($seq, 0, 80) = '';
     }
 }
