@@ -148,7 +148,7 @@ while (<GTF>) {
     m/gene_id "(.+?)"; transcript_id "(.+?)"/;
     $gen = $1;
     $trn = $2;
-    #next if ($gen =~ m/^ENS/ and $trn =~ m/^ENS/);
+    next if ($gen =~ m/^ENS/ and $trn =~ m/^ENS/);
     $seq  = substr ($chr{$chr}, $ini - 1, $end - $ini);
     if ($dir eq '-') {
         $seq = revcomp($seq);
