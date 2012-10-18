@@ -55,7 +55,13 @@ warn "reading sequences from $ref\n";
 open FA, "$ref" or die "cannot open file $ref\n";
 while (<FA>) {
     chomp;
-    (m/^>(.+)/) ? $id = $1 : $chr{$id} .= $_;
+    if (m/^>(.+)/) 
+        $id = $1;
+        warn "    $id\n";
+    }
+    else {
+        $chr{$id} .= $_;
+    }
 }
 close FA;
 
