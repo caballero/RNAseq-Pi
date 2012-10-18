@@ -49,7 +49,7 @@ $ARGV[2] or die "usage perl gtf2fa.pl <FASTA> <GTF> <OUT>\n";
 my ($ref, $gtf, $out) = @ARGV;
 my %chr;
 my %seq;
-my ($id, $chr, $ini, $end, $dir, $seq, $gen, $trn);
+my ($id, $chr, $ini, $end, $dir, $seq, $gen, $trn, $pep);
 
 my %genetic_code = (   
     'TCA' => 'S',    # Serine
