@@ -70,12 +70,12 @@ open GTF, "$gtf" or die "cannot open file $gtf\n";
 while (<GTF>) {
     chomp;
     my @a = split (/\t/, $_);
-    next if  ($a[2] ne 'exon');
+    next unless ($a[2] eq 'exon');
     $chr  = $a[0];
     $ini  = $a[3];
     $end  = $a[4];
     $dir  = $a[6];
-    next if !(defined $chr{$chr});
+    next unless (defined $chr{$chr});
     
     s/CUFF/FEASTSEQ/g;
     m/gene_id "(.+?)"; transcript_id "(.+?)"/;
